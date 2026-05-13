@@ -1,4 +1,4 @@
-import { Component as NgComponent, inject as ngInject, signal, effect } from '@angular/core';
+import { Component as NgComponent, inject as ngInject, signal, effect, computed, resource } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { injectLoad, defineRouteMeta } from '@analogjs/router';
@@ -10,21 +10,13 @@ import { HlmLabel } from '@spartan-ng/helm/label';
 import { HlmCardImports } from '@spartan-ng/helm/card';
 import { HlmTableImports } from '@spartan-ng/helm/table';
 import { HlmTabsImports } from '@spartan-ng/helm/tabs';
-import { firstValueFrom, lastValueFrom } from 'rxjs';
+import { firstValueFrom } from 'rxjs';
 import { toSignal } from '@angular/core/rxjs-interop';
+import type { load } from './admin.server';
 
 export const routeMeta = defineRouteMeta({
   canActivate: [adminGuard],
 });
-
-export const load = async () => {
-  const http = ngInject(HttpClient);
-  const [res, competitors] = await Promise.all([
-    firstValueFrom(http.get<any>('/api/tournament')),
-    firstValueFrom(http.get<any[]>('/api/competitors')),
-  ]);
-  return { tournament: res?.tournament, competitors };
-};
 
 @NgComponent({
   selector: 'app-admin',
@@ -132,18 +124,24 @@ export const load = async () => {
                     </tr>
                   </thead>
                   <tbody hlmTBody>
-                    @for (c of competitors(); track c.id) {
+                    @if (competitorsResource.isLoading()) {
                       <tr hlmTr>
-                        <td hlmTd class="w-16 text-muted-foreground">{{ c.id }}</td>
-                        <td hlmTd class="font-medium">{{ c.name }}</td>
-                        <td hlmTd class="w-24 text-right">
-                          <button hlmBtn variant="ghost" size="sm" class="text-destructive hover:text-destructive" (click)="deleteCompetitor(c.id)">Löschen</button>
-                        </td>
+                        <td hlmTd colspan="3" class="text-center py-8">Lade Teilnehmer...</td>
                       </tr>
-                    } @empty {
-                      <tr hlmTr>
-                        <td hlmTd colspan="3" class="text-center py-8 text-muted-foreground">Keine Teilnehmer gefunden.</td>
-                      </tr>
+                    } @else {
+                      @for (c of competitors(); track c.id) {
+                        <tr hlmTr>
+                          <td hlmTd class="w-16 text-muted-foreground font-mono">{{ c.id }}</td>
+                          <td hlmTd class="font-medium">{{ c.name }}</td>
+                          <td hlmTd class="w-24 text-right">
+                            <button hlmBtn variant="ghost" size="sm" class="text-destructive hover:text-destructive" (click)="deleteCompetitor(c.id)">Löschen</button>
+                          </td>
+                        </tr>
+                      } @empty {
+                        <tr hlmTr>
+                          <td hlmTd colspan="3" class="text-center py-8 text-muted-foreground italic text-lg">Keine Teilnehmer gefunden.</td>
+                        </tr>
+                      }
                     }
                   </tbody>
                 </table>
@@ -204,7 +202,12 @@ export default class AdminPage {
   initialData = toSignal(injectLoad<typeof load>());
   
   loading = signal(false);
-  competitors = signal<any[]>([]);
+
+  competitorsResource = resource({
+    loader: () => firstValueFrom(this.http.get<any[]>('/api/competitors')),
+  });
+
+  competitors = computed(() => this.competitorsResource.value() ?? []);
 
   detailsForm = this.fb.group({
     name: ['', Validators.required],
@@ -221,17 +224,15 @@ export default class AdminPage {
   constructor() {
     effect(() => {
       const data = this.initialData();
-      const t = data?.tournament;
-      if (t) {
+      if (data?.tournament) {
         this.detailsForm.patchValue({
-          ...t,
-          tournamentStartTime: new Date(t.tournamentStartTime).toISOString().slice(0, 16),
-          finalsStartTime: new Date(t.finalsStartTime).toISOString().slice(0, 16),
+          ...data.tournament,
+          tournamentStartTime: new Date(data.tournament.tournamentStartTime).toISOString().slice(0, 16),
+          finalsStartTime: new Date(data.tournament.finalsStartTime).toISOString().slice(0, 16),
           adminPassword: '',
           refereePassword: '',
         });
       }
-      this.competitors.set(data?.competitors ?? []);
     });
   }
 
@@ -252,8 +253,8 @@ export default class AdminPage {
     if (!name) return;
     this.loading.set(true);
     try {
-      const created = await firstValueFrom(this.http.post<any>('/api/competitors', { name }));
-      this.competitors.update(list => [...list, created]);
+      await firstValueFrom(this.http.post<any>('/api/competitors', { name }));
+      this.competitorsResource.reload();
     } catch (err) {
       console.error('Add failed', err);
     } finally {
@@ -266,7 +267,7 @@ export default class AdminPage {
     this.loading.set(true);
     try {
       await firstValueFrom(this.http.delete(`/api/competitors/${id}`));
-      this.competitors.update(list => list.filter(c => c.id !== id));
+      this.competitorsResource.reload();
     } catch (err) {
       console.error('Delete failed', err);
     } finally {
@@ -284,12 +285,7 @@ export default class AdminPage {
       
       await firstValueFrom(this.http.post(url, {}));
       alert('Aktion erfolgreich ausgeführt.');
-      
-      // Refresh competitors if random-draw
-      if (type === 'random-draw') {
-        const list = await firstValueFrom(this.http.get<any[]>('/api/competitors'));
-        this.competitors.set(list);
-      }
+      this.competitorsResource.reload();
     } catch (err) {
       console.error('Action failed', err);
       alert('Fehler bei der Aktion.');

@@ -1,8 +1,9 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, signal, effect, computed } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { HlmButton } from '@spartan-ng/helm/button';
+import { toSignal } from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'app-navbar',
@@ -41,20 +42,9 @@ import { HlmButton } from '@spartan-ng/helm/button';
 })
 export class NavbarComponent {
   private http = inject(HttpClient);
-  role = signal<'admin' | 'referee' | null>(null);
-
-  constructor() {
-    this.checkSession();
-  }
-
-  async checkSession() {
-    try {
-      const res = await this.http.get<{ role: 'admin' | 'referee' }>('/api/auth/session').toPromise();
-      this.role.set(res?.role ?? null);
-    } catch {
-      this.role.set(null);
-    }
-  }
+  
+  private _session = toSignal(this.http.get<{ role: 'admin' | 'referee' | null }>('/api/auth/session'));
+  role = computed(() => this._session()?.role ?? null);
 
   async logout() {
     try {

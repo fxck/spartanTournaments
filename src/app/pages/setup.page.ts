@@ -10,10 +10,7 @@ import { HlmCardImports } from '@spartan-ng/helm/card';
 import { lastValueFrom } from 'rxjs';
 import { CommonModule } from '@angular/common';
 import { toSignal } from '@angular/core/rxjs-interop';
-
-export const load = () => {
-  return lastValueFrom(inject(HttpClient).get<any>('/api/tournament'));
-};
+import type { load } from './setup.server';
 
 @Component({
   selector: 'app-setup',
@@ -116,10 +113,12 @@ export default class SetupPage {
 
   constructor() {
     // If tournament already exists, redirect to home
-    const tournamentData = this.data();
-    if (tournamentData && (tournamentData.tournament || (tournamentData as any).id)) {
-      this.router.navigate(['/']);
-    }
+    effect(() => {
+      const tournamentData = this.data();
+      if (tournamentData && tournamentData.tournament) {
+        this.router.navigate(['/']);
+      }
+    });
   }
 
   async onSubmit() {

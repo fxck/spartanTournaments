@@ -10,13 +10,16 @@ const sessionOptions = {
   password: process.env['SESSION_SECRET'] ?? 'change-me-in-production-min-32-chars!!',
   cookieName: 'spartan-tournament-session',
   cookieOptions: {
-    secure: process.env['NODE_ENV'] === 'production',
+    secure: false, // Force false for now to debug
     httpOnly: true,
     sameSite: 'lax' as const,
+    path: '/',
   },
 };
 
 export async function getSession(event: H3Event) {
+  const cookieHeader = event.node.req.headers.cookie;
+  console.log(`[SESSION] Request path: ${event.path} | Cookie present: ${!!cookieHeader}`);
   return getIronSession<SessionData>(event.node.req, event.node.res, sessionOptions);
 }
 

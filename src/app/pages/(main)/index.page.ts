@@ -1,13 +1,8 @@
-import { Component, inject, computed } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { Component, computed } from '@angular/core';
 import { injectLoad } from '@analogjs/router';
 import { CommonModule } from '@angular/common';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { lastValueFrom } from 'rxjs';
-
-export const load = () => {
-  return lastValueFrom(inject(HttpClient).get<any[]>('/api/pairings/active'));
-};
+import type { load } from './index.server';
 
 @Component({
   selector: 'app-home',
@@ -52,5 +47,9 @@ export const load = () => {
   `,
 })
 export default class HomeComponent {
-  activePairings = toSignal(injectLoad<typeof load>(), { initialValue: [] });
+  private _data = toSignal(injectLoad<typeof load>(), { initialValue: [] });
+  activePairings = computed(() => {
+    const d = this._data();
+    return Array.isArray(d) ? d : [];
+  });
 }

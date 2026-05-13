@@ -11,10 +11,12 @@ export default defineEventHandler(async (event) => {
   if (!details) throw createError({ statusCode: 404, statusMessage: 'No tournament configured' });
 
   const isAdmin = await bcrypt.compare(password, details.adminPasswordHash);
+  console.log(`[LOGIN] Password match attempt. isAdmin: ${isAdmin}`);
   if (isAdmin) {
     const session = await getSession(event);
     session.role = 'admin';
     await session.save();
+    console.log(`[LOGIN] Session saved for admin`);
     return { role: 'admin' };
   }
 

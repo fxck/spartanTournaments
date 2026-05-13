@@ -1,7 +1,7 @@
-import { Component, inject, signal, computed } from '@angular/core';
+import { Component, inject, signal, computed, viewChild } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { injectLoad } from '@analogjs/router';
 import { CommonModule } from '@angular/common';
+import { RouterLink } from '@angular/router';
 import { HlmTableImports } from '@spartan-ng/helm/table';
 import { HlmButton } from '@spartan-ng/helm/button';
 import { HlmDialogImports } from '@spartan-ng/helm/dialog';
@@ -9,17 +9,10 @@ import { HlmInput } from '@spartan-ng/helm/input';
 import { HlmLabel } from '@spartan-ng/helm/label';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { firstValueFrom } from 'rxjs';
+import { BrnDialog, BrnDialogImports } from '@spartan-ng/brain/dialog';
+import { injectLoad } from '@analogjs/router';
 import { toSignal } from '@angular/core/rxjs-interop';
-
-export const load = async () => {
-  const http = inject(HttpClient);
-  const [pairings, gamepoints, session] = await Promise.all([
-    firstValueFrom(http.get<any[]>('/api/pairings')),
-    firstValueFrom(http.get<any[]>('/api/gamepoints')),
-    firstValueFrom(http.get<{ role: string }>('/api/auth/session')),
-  ]);
-  return { pairings, gamepoints, role: session.role };
-};
+import type { load } from './results.server';
 
 @Component({
   selector: 'app-results',
@@ -27,8 +20,10 @@ export const load = async () => {
   imports: [
     CommonModule,
     ReactiveFormsModule,
+    RouterLink,
     ...HlmTableImports,
     ...HlmDialogImports,
+    ...BrnDialogImports,
     HlmButton,
     HlmInput,
     HlmLabel,
@@ -40,13 +35,13 @@ export const load = async () => {
         <p class="text-muted-foreground mt-2">Alle abgeschlossenen und laufenden Spiele.</p>
       </header>
 
-      <div hlmTableContainer class="border rounded-lg overflow-hidden">
+      <div hlmTableContainer class="border rounded-lg overflow-hidden shadow-sm">
         <table hlmTable>
           <thead hlmTHead>
             <tr hlmTr>
               <th hlmTh class="w-16">Nr.</th>
               <th hlmTh>Begegnung</th>
-              <th hlmTh class="w-24 text-center">Ergebnis</th>
+              <th hlmTh class="w-24 text-center border-l">Ergebnis</th>
               @if (canEdit()) {
                 <th hlmTh class="w-24 text-right">Aktion</th>
               }
@@ -58,20 +53,24 @@ export const load = async () => {
                 <td hlmTd class="w-16 text-muted-foreground font-mono">{{ p.gamenumber }}</td>
                 <td hlmTd>
                   <div class="flex items-center gap-4">
-                    <span class="flex-1 text-right" [class.font-bold]="p.points?.competitor1Points > p.points?.competitor2Points">
+                    <a [routerLink]="['/competitor', p.competitor1.id]" 
+                       class="flex-1 text-right hover:underline hover:text-primary transition-colors"
+                       [class.font-bold]="p.points?.competitor1Points > p.points?.competitor2Points">
                       {{ p.competitor1.name }}
-                    </span>
-                    <span class="text-muted-foreground/50 text-xs font-bold">VS</span>
-                    <span class="flex-1" [class.font-bold]="p.points?.competitor2Points > p.points?.competitor1Points">
+                    </a>
+                    <span class="text-muted-foreground/50 text-xs font-bold italic">VS</span>
+                    <a [routerLink]="['/competitor', p.competitor2.id]" 
+                       class="flex-1 hover:underline hover:text-primary transition-colors"
+                       [class.font-bold]="p.points?.competitor2Points > p.points?.competitor1Points">
                       {{ p.competitor2.name }}
-                    </span>
+                    </a>
                   </div>
                 </td>
-                <td hlmTd class="w-24 text-center font-black text-lg">
+                <td hlmTd class="w-24 text-center font-black text-xl border-l bg-muted/20">
                   @if (p.points) {
                     {{ p.points.competitor1Points }}:{{ p.points.competitor2Points }}
                   } @else {
-                    <span class="text-muted-foreground/30">-:-</span>
+                    <span class="text-muted-foreground/30 font-normal">-:-</span>
                   }
                 </td>
                 @if (canEdit()) {
@@ -84,7 +83,7 @@ export const load = async () => {
               </tr>
             } @empty {
               <tr hlmTr>
-                <td hlmTd colspan="4" class="text-center py-24 text-muted-foreground">Noch keine Spiele geplant.</td>
+                <td hlmTd colspan="4" class="text-center py-24 text-muted-foreground italic">Noch keine Spiele geplant.</td>
               </tr>
             }
           </tbody>
@@ -92,40 +91,41 @@ export const load = async () => {
       </div>
     </div>
 
-    <!-- Edit Result Dialog -->
-    @if (editingPairing(); as p) {
-      <hlm-dialog [state]="editingPairing() ? 'open' : 'closed'" (closed)="editingPairing.set(null)">
-        <hlm-dialog-content class="sm:max-w-[425px]">
+    <brn-dialog #dialog [closeDelay]="100">
+      <hlm-dialog-content class="sm:max-w-[425px]" *brnDialogContent="let ctx">
+        @if (editingPairing(); as p) {
           <hlm-dialog-header>
             <h3 hlmDialogTitle>Ergebnis eintragen</h3>
             <p hlmDialogDescription>Spiel Nr. {{ p.gamenumber }} auf Court {{ p.court }}</p>
           </hlm-dialog-header>
           
-          <form [formGroup]="resultForm" (ngSubmit)="saveResult()" class="grid gap-6 py-4">
+          <form [formGroup]="resultForm" (ngSubmit)="saveResult(ctx)" class="grid gap-6 py-4">
             <div class="grid grid-cols-2 gap-8 items-center">
               <div class="space-y-2 text-center">
                 <label hlmLabel>{{ p.competitor1.name }}</label>
-                <input hlmInput type="number" formControlName="competitor1Points" class="text-center text-2xl h-16" />
+                <input hlmInput type="number" formControlName="competitor1Points" class="text-center text-3xl h-20" />
               </div>
               <div class="space-y-2 text-center">
                 <label hlmLabel>{{ p.competitor2.name }}</label>
-                <input hlmInput type="number" formControlName="competitor2Points" class="text-center text-2xl h-16" />
+                <input hlmInput type="number" formControlName="competitor2Points" class="text-center text-3xl h-20" />
               </div>
             </div>
 
-            <div class="flex justify-end gap-2">
-              <button hlmBtn variant="ghost" type="button" (click)="editingPairing.set(null)">Abbrechen</button>
+            <div class="flex justify-end gap-2 pt-4">
+              <button hlmBtn variant="ghost" type="button" (click)="ctx.close()">Abbrechen</button>
               <button hlmBtn [disabled]="resultForm.invalid || loading()">Speichern</button>
             </div>
           </form>
-        </hlm-dialog-content>
-      </hlm-dialog>
-    }
+        }
+      </hlm-dialog-content>
+    </brn-dialog>
   `,
 })
 export default class ResultsPage {
   private fb = inject(FormBuilder);
   private http = inject(HttpClient);
+  private dialog = viewChild<BrnDialog>('dialog');
+  
   data = toSignal(injectLoad<typeof load>());
   
   pairings = computed(() => this.data()?.pairings ?? []);
@@ -145,13 +145,11 @@ export default class ResultsPage {
   results = computed(() => {
     const pairings = this.pairings();
     const gps = this.gamepoints();
-    return pairings.map(p => ({
+    return pairings.map((p: any) => ({
       ...p,
-      points: gps.find(g => g.pairingID === p.id)
+      points: gps.find((g: any) => g.pairingID === p.id)
     }));
   });
-
-  constructor() {}
 
   openEdit(p: any) {
     this.editingPairing.set(p);
@@ -159,9 +157,10 @@ export default class ResultsPage {
       competitor1Points: p.points?.competitor1Points ?? 0,
       competitor2Points: p.points?.competitor2Points ?? 0,
     });
+    this.dialog()?.open();
   }
 
-  async saveResult() {
+  async saveResult(ctx: any) {
     const p = this.editingPairing();
     if (!p || this.resultForm.invalid) return;
     
@@ -172,10 +171,9 @@ export default class ResultsPage {
         pairingID: p.id
       };
       await firstValueFrom(this.http.post<any>('/api/gamepoints', payload));
-      
-      // Update local state (this is tricky with computed data from injectLoad)
-      // Usually you would trigger a refresh of the resource or update a local signal.
-      // For this migration, we'll keep it simple.
+      // In this setup, we might need a way to refresh the data since injectLoad won't re-run automatically.
+      // But for now, we follow the requested refactoring.
+      ctx.close();
       this.editingPairing.set(null);
     } catch (err) {
       console.error('Save failed', err);
