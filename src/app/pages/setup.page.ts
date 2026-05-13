@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import {  Component, inject , ChangeDetectionStrategy } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
@@ -13,8 +13,8 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import type { load } from './setup.server';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-setup',
-  standalone: true,
   imports: [
     CommonModule,
     ReactiveFormsModule,

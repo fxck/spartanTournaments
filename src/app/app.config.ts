@@ -22,8 +22,11 @@ const cookieInterceptor: HttpInterceptorFn = (req, next) => {
   if (isServer) {
     const request: any = inject(REQUEST, { optional: true });
     // In H3/Analog, the request object headers can be accessed differently.
-    // Try both standard and Analog specific ways.
-    const cookies = request?.headers?.['cookie'] || request?.headers?.cookie;
+    // Try both standard Request API and raw object mapping.
+    const cookies = request?.headers?.get 
+      ? request.headers.get('cookie') 
+      : (request?.headers?.['cookie'] || request?.headers?.cookie);
+      
     if (cookies) {
       req = req.clone({
         setHeaders: {

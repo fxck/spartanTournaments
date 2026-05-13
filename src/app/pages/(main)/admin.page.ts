@@ -1,4 +1,4 @@
-import { Component as NgComponent, inject as ngInject, signal, effect, computed, resource } from '@angular/core';
+import { Component as NgComponent, inject as ngInject, signal, effect, computed, resource, ChangeDetectionStrategy } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { injectLoad, defineRouteMeta } from '@analogjs/router';
@@ -20,7 +20,7 @@ export const routeMeta = defineRouteMeta({
 
 @NgComponent({
   selector: 'app-admin',
-  standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     CommonModule,
     ReactiveFormsModule,

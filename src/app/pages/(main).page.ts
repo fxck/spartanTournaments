@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import {  Component , ChangeDetectionStrategy } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { NavbarComponent } from '../components/navbar.component';
 import { defineRouteMeta } from '@analogjs/router';
@@ -9,8 +9,8 @@ export const routeMeta = defineRouteMeta({
 });
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-main-layout',
-  standalone: true,
   imports: [RouterOutlet, NavbarComponent],
   template: `
     <app-navbar />

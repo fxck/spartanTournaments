@@ -1,4 +1,4 @@
-import { Component, inject, signal, computed, viewChild } from '@angular/core';
+import {  Component, inject, signal, computed, viewChild , ChangeDetectionStrategy } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
@@ -15,8 +15,8 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import type { load } from './results.server';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-results',
-  standalone: true,
   imports: [
     CommonModule,
     ReactiveFormsModule,

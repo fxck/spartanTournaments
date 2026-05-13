@@ -1,4 +1,4 @@
-import { Component, inject, computed, signal, effect } from '@angular/core';
+import {  Component, inject, computed, signal, effect , ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HlmTableImports } from '@spartan-ng/helm/table';
 import { HlmTabsImports } from '@spartan-ng/helm/tabs';
@@ -7,8 +7,8 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import type { load } from './[id].server';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-competitor-detail',
-  standalone: true,
   imports: [CommonModule, ...HlmTableImports, ...HlmTabsImports],
   template: `
     <div class="space-y-8">

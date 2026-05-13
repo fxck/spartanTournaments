@@ -1,12 +1,12 @@
-import { Component, computed } from '@angular/core';
+import {  Component, computed , ChangeDetectionStrategy } from '@angular/core';
 import { injectLoad } from '@analogjs/router';
 import { CommonModule } from '@angular/common';
 import { toSignal } from '@angular/core/rxjs-interop';
 import type { load } from './index.server';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-home',
-  standalone: true,
   imports: [CommonModule],
   template: `
     <div class="space-y-8">

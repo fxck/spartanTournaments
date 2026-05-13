@@ -10,7 +10,7 @@ Dieses Dokument dient als zentrale Wissensbasis für KI-Agenten (wie Gemini) und
 - **Data Fetching:** 
     - Nutze `resource()` für asynchrones Laden von Daten im Browser.
     - Falls `resource()` Typprobleme macht (bekannt in frühen Angular 21 Alphas), nutze das `effect` + `HttpClient` Pattern in der Komponente.
-- **Standalone:** Alle Komponenten sind `standalone: true`.
+- **Standalone:** Setze NIEMALS `standalone: true` in Decorators, da dies ab Angular v20 der Standard ist.
 
 ### Analog.js (Meta-Framework)
 - **SSR & Hydration:** Das Projekt nutzt Server-Side Rendering.

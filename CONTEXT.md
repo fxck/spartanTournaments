@@ -50,11 +50,6 @@ If no `tournamentDetails` row exists, all routes redirect server-side to `/setup
 - Nav shows Admin link only when session has `role: 'admin'`.
 - Session managed via `iron-session` (encrypted cookie).
 
-## Known bugs to fix in migration
-1. **Orphaned GamePoints on recalc:** `calcTournament` deletes all Pairings but not their GamePoints → stale results survive a recalc. Fix: delete GamePoints before deleting Pairings (or cascade via FK).
-2. **`forEach` + `async` anti-pattern:** All three action mutations (`calcTournament`, `calcFinals`, `calcNextFinalRound`) use `forEach(async ...)` which does not await the promises. The mutation returns before DB writes complete. Fix: use `Promise.all(items.map(async ...))`.
-3. **Finals GamePoints not cleaned up:** `calcFinals` deletes finals Pairings (`groupID < 0`) but not their GamePoints. Fix: delete finals GamePoints before deleting finals Pairings.
-
 ## Pages & Navigation
 Persistent top navigation bar with:
 - Home — current & upcoming games (public)

@@ -1,4 +1,4 @@
-import { Component, computed } from '@angular/core';
+import {  Component, computed , ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { HlmTableImports } from '@spartan-ng/helm/table';
@@ -7,8 +7,8 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import type { load } from './gameplan.server';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-gameplan',
-  standalone: true,
   imports: [CommonModule, RouterLink, ...HlmTableImports],
   template: `
     <div class="space-y-8">

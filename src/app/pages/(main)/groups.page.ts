@@ -1,4 +1,4 @@
-import { Component, computed } from '@angular/core';
+import {  Component, computed , ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { HlmTableImports } from '@spartan-ng/helm/table';
@@ -7,8 +7,8 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import type { load } from './groups.server';
 
 @Component({
+  changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-groups',
-  standalone: true,
   imports: [CommonModule, RouterLink, ...HlmTableImports],
   template: `
     <div class="space-y-8">
@@ -34,7 +34,7 @@ import type { load } from './groups.server';
                 </thead>
                 <tbody hlmTBody>
                   @for (c of group.competitors; track c.id; let i = $index) {
-                    <tr hlmTr [class.bg-primary/5]="i < 2">
+                    <tr hlmTr>
                       <td hlmTd class="w-12 text-center font-bold">{{ i + 1 }}</td>
                       <td hlmTd>
                         <a [routerLink]="['/competitor', c.id]" 
@@ -66,5 +66,5 @@ import type { load } from './groups.server';
 })
 export default class GroupsPage {
   data = toSignal(injectLoad<typeof load>(), { initialValue: [] });
-  groupList = computed(() => (Array.isArray(this.data()) ? this.data() : []) as any[]);
+  groupList = computed(() => (this.data() ?? []) as any[]);
 }
