@@ -9,7 +9,7 @@ import { HlmInput } from '@spartan-ng/helm/input';
 import { HlmLabel } from '@spartan-ng/helm/label';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { firstValueFrom } from 'rxjs';
-import { BrnDialog, BrnDialogImports } from '@spartan-ng/brain/dialog';
+import { BrnDialogImports } from '@spartan-ng/brain/dialog';
 import { injectLoad } from '@analogjs/router';
 import { toSignal } from '@angular/core/rxjs-interop';
 import type { load } from './results.server';
@@ -75,7 +75,7 @@ import type { load } from './results.server';
                 </td>
                 @if (canEdit()) {
                   <td hlmTd class="w-24 text-right">
-                    <button hlmBtn variant="ghost" size="sm" (click)="openEdit(p)">
+                    <button hlmBtn variant="ghost" size="sm" [hlmDialogTriggerFor]="dialog" (click)="openEdit(p)">
                       {{ p.points ? 'Edit' : 'Eintragen' }}
                     </button>
                   </td>
@@ -91,7 +91,7 @@ import type { load } from './results.server';
       </div>
     </div>
 
-    <brn-dialog #dialog [closeDelay]="100">
+    <hlm-dialog #dialog>
       <hlm-dialog-content class="sm:max-w-[425px]" *brnDialogContent="let ctx">
         @if (editingPairing(); as p) {
           <hlm-dialog-header>
@@ -118,13 +118,12 @@ import type { load } from './results.server';
           </form>
         }
       </hlm-dialog-content>
-    </brn-dialog>
+    </hlm-dialog>
   `,
 })
 export default class ResultsPage {
   private fb = inject(FormBuilder);
   private http = inject(HttpClient);
-  private dialog = viewChild<BrnDialog>('dialog');
   
   data = toSignal(injectLoad<typeof load>());
   
@@ -157,7 +156,6 @@ export default class ResultsPage {
       competitor1Points: p.points?.competitor1Points ?? 0,
       competitor2Points: p.points?.competitor2Points ?? 0,
     });
-    this.dialog()?.open();
   }
 
   async saveResult(ctx: any) {
@@ -171,10 +169,10 @@ export default class ResultsPage {
         pairingID: p.id
       };
       await firstValueFrom(this.http.post<any>('/api/gamepoints', payload));
-      // In this setup, we might need a way to refresh the data since injectLoad won't re-run automatically.
-      // But for now, we follow the requested refactoring.
       ctx.close();
       this.editingPairing.set(null);
+      // Reload page to see new results
+      window.location.reload();
     } catch (err) {
       console.error('Save failed', err);
     } finally {
