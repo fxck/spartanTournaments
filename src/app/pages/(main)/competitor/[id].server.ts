@@ -1,18 +1,24 @@
 import { PageServerLoad } from '@analogjs/router';
-import { db, pairings, gamePoints, competitors } from '../../../../server/db';
-import { getGroups } from '../../../../server/routes/api/competitors/groups.get';
-import { eq } from 'drizzle-orm';
+import { eq, or } from 'drizzle-orm';
 import { alias } from 'drizzle-orm/pg-core';
+import { db, pairings, gamePoints, competitors } from '../../../../server/db';
+import { toCalcCompetitor } from '../../../../server/db/calc-mappers';
+import { calcAllMatchPoints, type CalcPairing } from 'calc-tournament';
 
 export const load = async ({ event, params }: PageServerLoad) => {
   const id = Number(params?.['id']);
   if (!id) return { competitor: null, pairings: [], gamepoints: [], groups: [] };
 
+  const competitor = (await db.select().from(competitors).where(eq(competitors.id, id)))[0];
+  if (!competitor) {
+    return { competitor: null, pairings: [], gamepoints: [], groups: [] };
+  }
+
   const c1 = alias(competitors, 'c1');
   const c2 = alias(competitors, 'c2');
+  const groupId = competitor.groupID ?? 0;
 
-  const [allComps, allPairings, allGps, groups] = await Promise.all([
-    db.select().from(competitors),
+  const [joinedPairings, allGps, groupComps, groupPairings] = await Promise.all([
     db
       .select({
         id: pairings.id,
@@ -21,28 +27,33 @@ export const load = async ({ event, params }: PageServerLoad) => {
         court: pairings.court,
         groupID: pairings.groupID,
         round: pairings.round,
-        competitor1: {
-          id: c1.id,
-          name: c1.name,
-        },
-        competitor2: {
-          id: c2.id,
-          name: c2.name,
-        },
+        competitor1ID: pairings.competitor1ID,
+        competitor2ID: pairings.competitor2ID,
+        competitor1: { id: c1.id, name: c1.name },
+        competitor2: { id: c2.id, name: c2.name },
       })
       .from(pairings)
-      .innerJoin(c1, eq(pairings.competitor1ID, c1.id))
-      .innerJoin(c2, eq(pairings.competitor2ID, c2.id))
+      .leftJoin(c1, eq(pairings.competitor1ID, c1.id))
+      .leftJoin(c2, eq(pairings.competitor2ID, c2.id))
+      .where(or(eq(pairings.competitor1ID, id), eq(pairings.competitor2ID, id)))
       .orderBy(pairings.startTime, pairings.court),
     db.select().from(gamePoints),
-    getGroups(id),
+    groupId > 0 ? db.select().from(competitors).where(eq(competitors.groupID, groupId)) : Promise.resolve([]),
+    groupId > 0 ? db.select().from(pairings).where(eq(pairings.groupID, groupId)) : Promise.resolve([]),
   ]);
 
-  const competitor = allComps.find((c) => c.id === id);
+  const groups = [];
+  if (groupId > 0 && groupComps.length > 0) {
+    const groupPairingIds = new Set(groupPairings.map((p) => p.id));
+    const groupGps = allGps.filter((gp) => groupPairingIds.has(gp.pairingID));
+    const calcComps = groupComps.map(toCalcCompetitor);
+    calcAllMatchPoints(calcComps, groupGps, groupPairings as CalcPairing[]);
+    groups.push({ id: groupId, competitors: calcComps });
+  }
 
   return {
-    competitor: competitor ?? null,
-    pairings: allPairings,
+    competitor,
+    pairings: joinedPairings,
     gamepoints: allGps,
     groups,
   };

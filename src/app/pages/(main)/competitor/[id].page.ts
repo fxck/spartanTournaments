@@ -44,13 +44,18 @@ import type { load } from './[id].server';
                 <tbody hlmTBody>
                   @for (p of myPairings(); track p.id) {
                     <tr hlmTr>
-                      <td hlmTd class="w-16 text-muted-foreground font-mono">{{ p.gamenumber }}</td>
+                      <td hlmTd class="w-16 text-muted-foreground font-mono">{{ p.gamenumber > 0 ? p.gamenumber : '-' }}</td>
                       <td hlmTd class="w-32">
                         <div class="font-medium">{{ p.startTime | date:'HH:mm' }}</div>
                         <div class="text-xs text-muted-foreground">Court {{ p.court }}</div>
                       </td>
                       <td hlmTd>
-                        <span class="font-bold text-primary">{{ getOpponent(p)?.name }}</span>
+                        @let opp = getOpponent(p);
+                        @if (opp && opp.id && opp.id > 0) {
+                          <span class="font-bold text-primary">{{ opp.name }}</span>
+                        } @else {
+                          <span class="font-semibold text-muted-foreground italic">Offen</span>
+                        }
                       </td>
                       <td hlmTd class="w-24 text-center font-black text-lg bg-muted/10 border-l">
                         @if (p.points) {

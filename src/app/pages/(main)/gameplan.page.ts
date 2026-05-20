@@ -1,10 +1,13 @@
-import {  Component, computed , ChangeDetectionStrategy } from '@angular/core';
+import { Component, computed, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { HlmTableImports } from '@spartan-ng/helm/table';
 import { injectLoad } from '@analogjs/router';
 import { toSignal } from '@angular/core/rxjs-interop';
 import type { load } from './gameplan.server';
+import { getPhaseName } from '../../shared/phase-name';
+
+type PairingRow = Awaited<ReturnType<typeof load>>[number];
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -30,29 +33,37 @@ import type { load } from './gameplan.server';
           </thead>
           <tbody hlmTBody>
             @for (p of pairings(); track p.id) {
-              <tr hlmTr [class.bg-primary/5]="p.groupID < 0">
-                <td hlmTd class="w-16 text-muted-foreground font-mono">{{ p.gamenumber }}</td>
+              <tr hlmTr [class]="p.groupID < 0 ? 'bg-primary/5' : ''">
+                <td hlmTd class="w-16 text-muted-foreground font-mono">{{ p.gamenumber > 0 ? p.gamenumber : '-' }}</td>
                 <td hlmTd class="w-32 text-center">
-                  <span class="px-2 py-1 rounded text-xs font-bold" 
+                  <span class="px-2 py-1 rounded text-xs font-bold"
                         [class.bg-secondary]="p.groupID > 0"
                         [class.bg-primary]="p.groupID < 0"
                         [class.text-primary-foreground]="p.groupID < 0">
-                    {{ p.groupID > 0 ? 'Gruppe ' + p.groupID : getPhaseName(p.groupID) }}
+                    {{ p.groupID > 0 ? 'Gruppe ' + p.groupID : getPhaseName(p.round) }}
                   </span>
                 </td>
                 <td hlmTd class="w-32 font-medium">{{ p.startTime | date:'HH:mm' }} Uhr</td>
                 <td hlmTd class="w-24 text-center">{{ p.court }}</td>
                 <td hlmTd>
                   <div class="flex items-center gap-4 text-lg">
-                    <a [routerLink]="['/competitor', p.competitor1.id]" 
-                       class="flex-1 text-right font-semibold hover:underline hover:text-primary transition-colors">
-                      {{ p.competitor1.name }}
-                    </a>
+                    @if (p.competitor1 && p.competitor1.id && p.competitor1.id > 0) {
+                      <a [routerLink]="['/competitor', p.competitor1.id]"
+                         class="flex-1 text-right font-semibold hover:underline hover:text-primary transition-colors">
+                        {{ p.competitor1.name }}
+                      </a>
+                    } @else {
+                      <span class="flex-1 text-right font-semibold text-muted-foreground italic">Offen</span>
+                    }
                     <span class="text-muted-foreground/50 text-xs font-black italic">VS</span>
-                    <a [routerLink]="['/competitor', p.competitor2.id]" 
-                       class="flex-1 font-semibold hover:underline hover:text-primary transition-colors">
-                      {{ p.competitor2.name }}
-                    </a>
+                    @if (p.competitor2 && p.competitor2.id && p.competitor2.id > 0) {
+                      <a [routerLink]="['/competitor', p.competitor2.id]"
+                         class="flex-1 font-semibold hover:underline hover:text-primary transition-colors">
+                        {{ p.competitor2.name }}
+                      </a>
+                    } @else {
+                      <span class="flex-1 font-semibold text-muted-foreground italic">Offen</span>
+                    }
                   </div>
                 </td>
               </tr>
@@ -68,16 +79,7 @@ import type { load } from './gameplan.server';
   `,
 })
 export default class GameplanPage {
-  data = toSignal(injectLoad<typeof load>(), { initialValue: [] });
-  pairings = computed(() => (Array.isArray(this.data()) ? this.data() : []) as any[]);
-
-  getPhaseName(id: number): string {
-    switch (id) {
-      case -1: return 'Finale';
-      case -2: return 'Halbfinale';
-      case -4: return 'Viertelfinale';
-      case -8: return 'Achtelfinale';
-      default: return 'KO-Runde';
-    }
-  }
+  private data = toSignal(injectLoad<typeof load>(), { initialValue: [] as PairingRow[] });
+  pairings = computed(() => this.data());
+  protected getPhaseName = getPhaseName;
 }

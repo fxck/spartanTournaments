@@ -35,11 +35,16 @@ Ein geplantes Spiel zwischen zwei Competitors auf einem bestimmten Court zu eine
 
 **GroupID-Konvention:**
 - `groupID > 0` → Gruppenphase, gehört zu dieser Gruppe
-- `groupID < 0` → Finalphase; der negative Wert kodiert die Runde:
+- `groupID < 0` → Finalphase; kodiert den **Bracket-Slot** (nicht die Runde!)
+
+**Round-Konvention (für Finalphase):**
+- `round < 0` → Finalphase; der negative Wert kodiert die Runde:
   - `-1` = Finale
   - `-2` = Halbfinale
   - `-4` = Viertelfinale
   - `-8` = Achtelfinale
+
+> **Wichtig:** Für die Anzeige des Phasennamens immer `round` verwenden, nicht `groupID`. `groupID < 0` prüft nur ob ein Spiel zur Finalphase gehört.
 
 ### GamePoint
 Das rohe Spielergebnis eines Pairings: `competitor1Points` und `competitor2Points`. Genau ein GamePoint pro Pairing (Upsert). Wird vom Referee eingetragen.

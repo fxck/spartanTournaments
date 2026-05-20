@@ -50,20 +50,28 @@ import type { load } from './results.server';
           <tbody hlmTBody>
             @for (p of results(); track p.id) {
               <tr hlmTr>
-                <td hlmTd class="w-16 text-muted-foreground font-mono">{{ p.gamenumber }}</td>
+                <td hlmTd class="w-16 text-muted-foreground font-mono">{{ p.gamenumber > 0 ? p.gamenumber : '-' }}</td>
                 <td hlmTd>
                   <div class="flex items-center gap-4">
-                    <a [routerLink]="['/competitor', p.competitor1.id]" 
-                       class="flex-1 text-right hover:underline hover:text-primary transition-colors"
-                       [class.font-bold]="p.points?.competitor1Points > p.points?.competitor2Points">
-                      {{ p.competitor1.name }}
-                    </a>
+                    @if (p.competitor1 && p.competitor1.id && p.competitor1.id > 0) {
+                      <a [routerLink]="['/competitor', p.competitor1.id]" 
+                         class="flex-1 text-right hover:underline hover:text-primary transition-colors"
+                         [class.font-bold]="p.points?.competitor1Points > p.points?.competitor2Points">
+                        {{ p.competitor1.name }}
+                      </a>
+                    } @else {
+                      <span class="flex-1 text-right text-muted-foreground italic">Offen</span>
+                    }
                     <span class="text-muted-foreground/50 text-xs font-bold italic">VS</span>
-                    <a [routerLink]="['/competitor', p.competitor2.id]" 
-                       class="flex-1 hover:underline hover:text-primary transition-colors"
-                       [class.font-bold]="p.points?.competitor2Points > p.points?.competitor1Points">
-                      {{ p.competitor2.name }}
-                    </a>
+                    @if (p.competitor2 && p.competitor2.id && p.competitor2.id > 0) {
+                      <a [routerLink]="['/competitor', p.competitor2.id]" 
+                         class="flex-1 hover:underline hover:text-primary transition-colors"
+                         [class.font-bold]="p.points?.competitor2Points > p.points?.competitor1Points">
+                        {{ p.competitor2.name }}
+                      </a>
+                    } @else {
+                      <span class="flex-1 text-muted-foreground italic">Offen</span>
+                    }
                   </div>
                 </td>
                 <td hlmTd class="w-24 text-center font-black text-xl border-l bg-muted/20">
@@ -75,9 +83,13 @@ import type { load } from './results.server';
                 </td>
                 @if (canEdit()) {
                   <td hlmTd class="w-24 text-right">
-                    <button hlmBtn variant="ghost" size="sm" [hlmDialogTriggerFor]="dialog" (click)="openEdit(p)">
-                      {{ p.points ? 'Edit' : 'Eintragen' }}
-                    </button>
+                    @if (p.competitor1 && p.competitor1.id && p.competitor1.id > 0 && p.competitor2 && p.competitor2.id && p.competitor2.id > 0) {
+                      <button hlmBtn variant="ghost" size="sm" [hlmDialogTriggerFor]="dialog" (click)="openEdit(p)">
+                        {{ p.points ? 'Edit' : 'Eintragen' }}
+                      </button>
+                    } @else {
+                      <span class="text-muted-foreground/30 text-sm px-3">-</span>
+                    }
                   </td>
                 }
               </tr>
@@ -96,7 +108,7 @@ import type { load } from './results.server';
         @if (editingPairing(); as p) {
           <hlm-dialog-header>
             <h3 hlmDialogTitle>Ergebnis eintragen</h3>
-            <p hlmDialogDescription>Spiel Nr. {{ p.gamenumber }} auf Court {{ p.court }}</p>
+            <p hlmDialogDescription>@if (p.gamenumber > 0) { Spiel Nr. {{ p.gamenumber }} } @else { Spiel } auf Court {{ p.court }}</p>
           </hlm-dialog-header>
           
           <form [formGroup]="resultForm" (ngSubmit)="saveResult(ctx)" class="grid gap-6 py-4">

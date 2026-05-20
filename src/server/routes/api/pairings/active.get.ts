@@ -22,6 +22,7 @@ export default defineEventHandler(async () => {
       startTime: pairings.startTime,
       court: pairings.court,
       groupID: pairings.groupID,
+      round: pairings.round,
       competitor1: {
         id: c1.id,
         name: c1.name,
@@ -32,8 +33,8 @@ export default defineEventHandler(async () => {
       },
     })
     .from(pairings)
-    .innerJoin(c1, eq(pairings.competitor1ID, c1.id))
-    .innerJoin(c2, eq(pairings.competitor2ID, c2.id))
+    .leftJoin(c1, eq(pairings.competitor1ID, c1.id))
+    .leftJoin(c2, eq(pairings.competitor2ID, c2.id))
     .where(between(pairings.startTime, from, to))
     .orderBy(pairings.startTime, pairings.court);
 

@@ -1,4 +1,4 @@
-import {  Component, inject , ChangeDetectionStrategy } from '@angular/core';
+import { Component, inject, effect, signal, ChangeDetectionStrategy } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
@@ -11,6 +11,7 @@ import { lastValueFrom } from 'rxjs';
 import { CommonModule } from '@angular/common';
 import { toSignal } from '@angular/core/rxjs-interop';
 import type { load } from './setup.server';
+import { SimpleDialogService } from '../shared/simple-dialog/simple-dialog.service';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -39,53 +40,57 @@ import type { load } from './setup.server';
 
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div class="grid gap-2">
-              <label hlmLabel for="numberOfParallelGames">Parallele Spiele (Courts)</label>
-              <input hlmInput id="numberOfParallelGames" type="number" formControlName="numberOfParallelGames" />
+              <label hlmLabel for="numberOfParallelGames">Anzahl paralleler Spiele</label>
+              <input hlmInput type="number" id="numberOfParallelGames" formControlName="numberOfParallelGames" />
             </div>
-            <div class="grid gap-2">
-              <label hlmLabel for="minutesPerGame">Minuten pro Spiel</label>
-              <input hlmInput id="minutesPerGame" type="number" formControlName="minutesPerGame" />
-            </div>
-          </div>
 
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div class="grid gap-2">
-              <label hlmLabel for="minutesAvailForGroupsPhase">Minuten für Gruppenphase</label>
-              <input hlmInput id="minutesAvailForGroupsPhase" type="number" formControlName="minutesAvailForGroupsPhase" />
+              <label hlmLabel for="minutesPerGame">Dauer pro Spiel (Minuten)</label>
+              <input hlmInput type="number" id="minutesPerGame" formControlName="minutesPerGame" />
             </div>
+
+            <div class="grid gap-2">
+              <label hlmLabel for="minutesAvailForGroupsPhase">Verfügbare Zeit Gruppenphase (Minuten)</label>
+              <input hlmInput type="number" id="minutesAvailForGroupsPhase" formControlName="minutesAvailForGroupsPhase" />
+            </div>
+
             <div class="grid gap-2">
               <label hlmLabel for="finalistCount">Anzahl Finalisten</label>
-              <input hlmInput id="finalistCount" type="number" formControlName="finalistCount" />
+              <input hlmInput type="number" id="finalistCount" formControlName="finalistCount" />
+            </div>
+
+            <div class="grid gap-2">
+              <label hlmLabel for="tournamentStartTime">Turnier Startzeit</label>
+              <input hlmInput type="datetime-local" id="tournamentStartTime" formControlName="tournamentStartTime" />
+            </div>
+
+            <div class="grid gap-2">
+              <label hlmLabel for="finalsStartTime">Finalspiele Startzeit</label>
+              <input hlmInput type="datetime-local" id="finalsStartTime" formControlName="finalsStartTime" />
             </div>
           </div>
+
+          <hr class="border-border" />
 
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div class="grid gap-2">
-              <label hlmLabel for="tournamentStartTime">Turnier Startzeit</label>
-              <input hlmInput id="tournamentStartTime" type="datetime-local" formControlName="tournamentStartTime" />
-            </div>
-            <div class="grid gap-2">
-              <label hlmLabel for="finalsStartTime">Finals Startzeit</label>
-              <input hlmInput id="finalsStartTime" type="datetime-local" formControlName="finalsStartTime" />
-            </div>
-          </div>
-
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 border-t pt-4">
-            <div class="grid gap-2">
               <label hlmLabel for="adminPassword">Admin Passwort</label>
-              <input hlmInput id="adminPassword" type="password" formControlName="adminPassword" />
+              <input hlmInput type="password" id="adminPassword" formControlName="adminPassword" />
             </div>
+
             <div class="grid gap-2">
-              <label hlmLabel for="refereePassword">Referee Passwort</label>
-              <input hlmInput id="refereePassword" type="password" formControlName="refereePassword" />
+              <label hlmLabel for="refereePassword">Schiedsrichter Passwort</label>
+              <input hlmInput type="password" id="refereePassword" formControlName="refereePassword" />
             </div>
           </div>
 
-          <div class="flex justify-end pt-4">
-            <button hlmBtn [disabled]="setupForm.invalid || loading">
-              {{ loading ? 'Wird gespeichert...' : 'Turnier anlegen' }}
-            </button>
-          </div>
+          <button hlmBtn type="submit" [disabled]="loading() || setupForm.invalid">
+            @if (loading()) {
+              Lädt...
+            } @else {
+              Turnier anlegen
+            }
+          </button>
         </form>
       </section>
     </div>
@@ -95,9 +100,10 @@ export default class SetupPage {
   private fb = inject(FormBuilder);
   private http = inject(HttpClient);
   private router = inject(Router);
+  private dialogService = inject(SimpleDialogService);
   
   data = toSignal(injectLoad<typeof load>());
-  loading = false;
+  loading = signal(false);
 
   setupForm = this.fb.group({
     name: ['', Validators.required],
@@ -123,15 +129,15 @@ export default class SetupPage {
 
   async onSubmit() {
     if (this.setupForm.invalid) return;
-    this.loading = true;
+    this.loading.set(true);
     try {
       await lastValueFrom(this.http.post('/api/tournament/setup', this.setupForm.value));
       this.router.navigate(['/admin']);
     } catch (err) {
       console.error('Setup failed', err);
-      alert('Setup fehlgeschlagen. Bitte prüfe die Eingaben.');
+      await this.dialogService.alert('Setup fehlgeschlagen', 'Bitte prüfe die Eingaben.', 'error');
     } finally {
-      this.loading = false;
+      this.loading.set(false);
     }
   }
 }

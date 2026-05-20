@@ -1,5 +1,5 @@
 import { Component as NgComponent, inject as ngInject, signal, effect, computed, resource, ChangeDetectionStrategy } from '@angular/core';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, ReactiveFormsModule, FormsModule, Validators } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { injectLoad, defineRouteMeta } from '@analogjs/router';
 import { adminGuard } from '../../auth.guard';
@@ -13,6 +13,7 @@ import { HlmTabsImports } from '@spartan-ng/helm/tabs';
 import { firstValueFrom } from 'rxjs';
 import { toSignal } from '@angular/core/rxjs-interop';
 import type { load } from './admin.server';
+import { SimpleDialogService } from '../../shared/simple-dialog/simple-dialog.service';
 
 export const routeMeta = defineRouteMeta({
   canActivate: [adminGuard],
@@ -24,6 +25,7 @@ export const routeMeta = defineRouteMeta({
   imports: [
     CommonModule,
     ReactiveFormsModule,
+    FormsModule,
     HlmButton,
     HlmInput,
     HlmLabel,
@@ -60,7 +62,7 @@ export const routeMeta = defineRouteMeta({
 
               <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div class="grid gap-2">
-                  <label hlmLabel for="numberOfParallelGames">Parallele Spiele</label>
+                  <label hlmLabel for="numberOfParallelGames">Parallele Spiele (Courts)</label>
                   <input hlmInput id="numberOfParallelGames" type="number" formControlName="numberOfParallelGames" />
                 </div>
                 <div class="grid gap-2">
@@ -80,114 +82,115 @@ export const routeMeta = defineRouteMeta({
                 </div>
               </div>
 
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-4 border-t pt-4">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div class="grid gap-2">
-                  <label hlmLabel for="adminPassword">Neues Admin Passwort (optional)</label>
-                  <input hlmInput id="adminPassword" type="password" formControlName="adminPassword" placeholder="Leer lassen für keine Änderung" />
+                  <label hlmLabel for="tournamentStartTime">Turnier Startzeit</label>
+                  <input hlmInput id="tournamentStartTime" type="datetime-local" formControlName="tournamentStartTime" />
                 </div>
                 <div class="grid gap-2">
-                  <label hlmLabel for="refereePassword">Neues Referee Passwort (optional)</label>
-                  <input hlmInput id="refereePassword" type="password" formControlName="refereePassword" />
+                  <label hlmLabel for="finalsStartTime">Finals Startzeit</label>
+                  <input hlmInput id="finalsStartTime" type="datetime-local" formControlName="finalsStartTime" />
                 </div>
               </div>
 
-              <div class="flex justify-end">
-                <button hlmBtn [disabled]="detailsForm.invalid || loading()">Speichern</button>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4 border-t pt-4">
+                <div class="grid gap-2">
+                  <label hlmLabel for="adminPassword">Neues Admin Passwort</label>
+                  <input hlmInput id="adminPassword" type="password" formControlName="adminPassword" placeholder="Unverändert lassen..." />
+                </div>
+                <div class="grid gap-2">
+                  <label hlmLabel for="refereePassword">Neues Schiedsrichter Passwort</label>
+                  <input hlmInput id="refereePassword" type="password" formControlName="refereePassword" placeholder="Unverändert lassen..." />
+                </div>
+              </div>
+
+              <div class="flex justify-end pt-4">
+                <button hlmBtn [disabled]="detailsForm.invalid || loading()">
+                  {{ loading() ? 'Wird gespeichert...' : 'Einstellungen speichern' }}
+                </button>
               </div>
             </form>
           </section>
         </div>
 
-        <!-- Competitors Management -->
-        <div hlmTabsContent="competitors" class="mt-6 space-y-6">
+        <!-- Competitors List -->
+        <div hlmTabsContent="competitors" class="mt-6">
           <section hlmCard>
             <header hlmCardHeader>
-              <h2 hlmCardTitle>Teilnehmer hinzufügen</h2>
+              <h2 hlmCardTitle>Teilnehmer</h2>
+              <p hlmCardDescription>Füge neue Boccia-Spieler oder Teams hinzu und verwalte sie.</p>
             </header>
-            <div hlmCardContent class="flex gap-4">
-              <div class="flex-1">
-                <input hlmInput placeholder="Name des Teams/Teilnehmers" #newName />
-              </div>
-              <button hlmBtn (click)="addCompetitor(newName.value); newName.value = ''" [disabled]="loading()">Hinzufügen</button>
-            </div>
-          </section>
+            
+            <div hlmCardContent class="space-y-6">
+              <form #addForm="ngForm" (ngSubmit)="addCompetitor(newCompetitorName.value); newCompetitorName.value = ''" class="flex gap-2">
+                <div class="flex-1">
+                  <input hlmInput #newCompetitorName placeholder="Name des Teilnehmers..." required />
+                </div>
+                <button hlmBtn [disabled]="loading()">Hinzufügen</button>
+              </form>
 
-          <section hlmCard>
-            <div hlmCardContent class="p-0">
-              <div hlmTableContainer>
-                <table hlmTable>
-                  <thead hlmTHead>
-                    <tr hlmTr>
-                      <th hlmTh class="w-16">ID</th>
-                      <th hlmTh>Name</th>
-                      <th hlmTh class="w-24 text-right">Aktion</th>
-                    </tr>
-                  </thead>
-                  <tbody hlmTBody>
-                    @if (competitorsResource.isLoading()) {
+              @if (competitors().length === 0) {
+                <div class="text-center py-8 text-muted-foreground">
+                  Keine Teilnehmer registriert.
+                </div>
+              } @else {
+                <div hlmTableContainer>
+                  <table hlmTable>
+                    <thead hlmThead>
                       <tr hlmTr>
-                        <td hlmTd colspan="3" class="text-center py-8">Lade Teilnehmer...</td>
+                        <th hlmTh class="w-16">ID</th>
+                        <th hlmTh>Name</th>
+                        <th hlmTh class="w-24 text-right">Aktionen</th>
                       </tr>
-                    } @else {
+                    </thead>
+                    <tbody hlmTbody>
                       @for (c of competitors(); track c.id) {
                         <tr hlmTr>
-                          <td hlmTd class="w-16 text-muted-foreground font-mono">{{ c.id }}</td>
-                          <td hlmTd class="font-medium">{{ c.name }}</td>
-                          <td hlmTd class="w-24 text-right">
-                            <button hlmBtn variant="ghost" size="sm" class="text-destructive hover:text-destructive" (click)="deleteCompetitor(c.id)">Löschen</button>
+                          <td hlmTd class="font-medium">{{ c.id }}</td>
+                          <td hlmTd>{{ c.name }}</td>
+                          <td hlmTd class="text-right">
+                            <button hlmBtn variant="destructive" size="sm" (click)="deleteCompetitor(c.id)">Löschen</button>
                           </td>
                         </tr>
-                      } @empty {
-                        <tr hlmTr>
-                          <td hlmTd colspan="3" class="text-center py-8 text-muted-foreground italic text-lg">Keine Teilnehmer gefunden.</td>
-                        </tr>
                       }
-                    }
-                  </tbody>
-                </table>
-              </div>
+                    </tbody>
+                  </table>
+                </div>
+              }
             </div>
           </section>
         </div>
 
-        <!-- Strategic Actions -->
+        <!-- Danger Zone Actions -->
         <div hlmTabsContent="actions" class="mt-6">
-          <section hlmCard>
+          <section hlmCard class="border-destructive/30">
             <header hlmCardHeader>
-              <h2 hlmCardTitle>Turnier-Operationen</h2>
-              <p hlmCardDescription>Gefährliche Aktionen. Hier werden Spielpläne generiert oder zurückgesetzt.</p>
+              <h2 hlmCardTitle class="text-destructive">Administrative Aktionen</h2>
+              <p hlmCardDescription>Kritische Aktionen zur Generierung und Steuerung des Turniers.</p>
             </header>
             <div hlmCardContent class="grid gap-6">
-              <div class="flex items-center justify-between p-4 border rounded-lg bg-muted/30">
-                <div>
-                  <h3 class="font-bold">1. Losziehung</h3>
-                  <p class="text-sm text-muted-foreground">Verteilt alle Teilnehmer zufällig auf Gruppen.</p>
+              <div class="flex items-center justify-between p-4 border rounded-lg">
+                <div class="space-y-1">
+                  <h3 class="font-semibold">Auslosung</h3>
+                  <p class="text-sm text-muted-foreground">Teilt alle registrierten Teilnehmer zufällig in Gruppen auf.</p>
                 </div>
-                <button hlmBtn variant="outline" (click)="action('random-draw')" [disabled]="loading()">Losziehen</button>
+                <button hlmBtn variant="outline" [disabled]="loading()" (click)="action('random-draw')">Zufällige Auslosung</button>
               </div>
 
-              <div class="flex items-center justify-between p-4 border rounded-lg bg-muted/30">
-                <div>
-                  <h3 class="font-bold">2. Turnier berechnen</h3>
-                  <p class="text-sm text-destructive">Löscht alle bestehenden Spiele und Ergebnisse!</p>
+              <div class="flex items-center justify-between p-4 border rounded-lg">
+                <div class="space-y-1">
+                  <h3 class="font-semibold">Turnierspiele generieren</h3>
+                  <p class="text-sm text-muted-foreground">Erstellt den Spielplan für die Gruppenphase basierend auf der Auslosung.</p>
                 </div>
-                <button hlmBtn variant="destructive" (click)="action('calc-tournament')" [disabled]="loading()">Neu Berechnen</button>
+                <button hlmBtn variant="outline" [disabled]="loading()" (click)="action('calc-tournament')">Spiele generieren</button>
               </div>
 
-              <div class="flex items-center justify-between p-4 border rounded-lg bg-muted/30">
-                <div>
-                  <h3 class="font-bold">3. Finals generieren</h3>
-                  <p class="text-sm text-muted-foreground">Erstellt das KO-Bracket basierend auf dem Gruppenranking.</p>
+              <div class="flex items-center justify-between p-4 border border-destructive/20 bg-destructive/5 rounded-lg">
+                <div class="space-y-1">
+                  <h3 class="font-semibold text-destructive">Gruppenphase beenden & Finals ausrechnen</h3>
+                  <p class="text-sm text-muted-foreground">Berechnet die Tabellen und generiert den Final-Spielplan (Halbfinale, Finale etc.).</p>
                 </div>
-                <button hlmBtn variant="outline" (click)="action('calc-finals')" [disabled]="loading()">Finals erstellen</button>
-              </div>
-
-              <div class="flex items-center justify-between p-4 border rounded-lg bg-muted/30">
-                <div>
-                  <h3 class="font-bold">4. Nächste Finalrunde</h3>
-                  <p class="text-sm text-muted-foreground">Berechnet die nächste Phase (z.B. nach Halbfinale das Finale).</p>
-                </div>
-                <button hlmBtn variant="outline" (click)="action('calc-next-final-round')" [disabled]="loading()">Weiterführen</button>
+                <button hlmBtn variant="destructive" [disabled]="loading()" (click)="action('calc-finals')">Finalspiele berechnen</button>
               </div>
             </div>
           </section>
@@ -199,6 +202,7 @@ export const routeMeta = defineRouteMeta({
 export default class AdminPage {
   private fb = ngInject(FormBuilder);
   private http = ngInject(HttpClient);
+  private dialogService = ngInject(SimpleDialogService);
   initialData = toSignal(injectLoad<typeof load>());
   
   loading = signal(false);
@@ -241,7 +245,7 @@ export default class AdminPage {
     this.loading.set(true);
     try {
       await firstValueFrom(this.http.put('/api/tournament', this.detailsForm.value));
-      alert('Einstellungen gespeichert.');
+      await this.dialogService.alert('Einstellungen', 'Einstellungen erfolgreich gespeichert.', 'success');
     } catch (err) {
       console.error('Update failed', err);
     } finally {
@@ -263,7 +267,7 @@ export default class AdminPage {
   }
 
   async deleteCompetitor(id: number) {
-    if (!confirm('Teilnehmer wirklich löschen?')) return;
+    if (!(await this.dialogService.confirm('Teilnehmer löschen', 'Möchtest du diesen Teilnehmer wirklich löschen?', true))) return;
     this.loading.set(true);
     try {
       await firstValueFrom(this.http.delete(`/api/competitors/${id}`));
@@ -276,7 +280,7 @@ export default class AdminPage {
   }
 
   async action(type: string) {
-    if (type === 'calc-tournament' && !confirm('Dies löscht ALLE Spiele und Ergebnisse. Wirklich fortfahren?')) return;
+    if (type === 'calc-tournament' && !(await this.dialogService.confirm('Spiele & Ergebnisse löschen', 'Dies löscht ALLE Spiele und Ergebnisse. Wirklich fortfahren?', true))) return;
     
     this.loading.set(true);
     try {
@@ -284,11 +288,11 @@ export default class AdminPage {
       if (type === 'random-draw') url = '/api/competitors/random-draw';
       
       await firstValueFrom(this.http.post(url, {}));
-      alert('Aktion erfolgreich ausgeführt.');
+      await this.dialogService.alert('Erfolg', 'Aktion erfolgreich ausgeführt.', 'success');
       this.competitorsResource.reload();
     } catch (err) {
       console.error('Action failed', err);
-      alert('Fehler bei der Aktion.');
+      await this.dialogService.alert('Fehler', 'Fehler bei der Aktion.', 'error');
     } finally {
       this.loading.set(false);
     }

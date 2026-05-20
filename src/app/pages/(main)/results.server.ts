@@ -29,8 +29,8 @@ export const load = async ({ event }: PageServerLoad) => {
         },
       })
       .from(pairings)
-      .innerJoin(c1, eq(pairings.competitor1ID, c1.id))
-      .innerJoin(c2, eq(pairings.competitor2ID, c2.id))
+      .leftJoin(c1, eq(pairings.competitor1ID, c1.id))
+      .leftJoin(c2, eq(pairings.competitor2ID, c2.id))
       .orderBy(pairings.startTime, pairings.court),
     db.select().from(gamePoints),
   ]);
