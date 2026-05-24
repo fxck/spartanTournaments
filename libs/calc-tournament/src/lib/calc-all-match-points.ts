@@ -1,6 +1,7 @@
 import { CalcCompetitor, CalcGamePoint, CalcPairing } from '../models/models';
 import { calcMatchPoints } from './calc-match-points';
 import { sortCompetitorsRanking } from './sort-competitors-ranking';
+import { sortGroupWithH2H } from './sort-group-h2h';
 
 export function calcAllMatchPoints(
   competitors: CalcCompetitor[],
@@ -63,7 +64,7 @@ export function calcAllMatchPoints(
   }, new Map<number, CalcCompetitor[]>());
 
   for (const group of groupedCompetitors.values()) {
-    group.sort(sortCompetitorsRanking);
+    sortGroupWithH2H(group);
     for (let i = 0; i < group.length; i++) {
       group[i].groupRanking = i + 1;
     }
