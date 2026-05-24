@@ -185,6 +185,18 @@ export const routeMeta = defineRouteMeta({
                 <button hlmBtn variant="outline" [disabled]="loading()" (click)="action('calc-tournament')">Spiele generieren</button>
               </div>
 
+              <div class="flex flex-col md:flex-row md:items-center justify-between p-4 border rounded-lg gap-4">
+                <div class="space-y-1 flex-1">
+                  <h3 class="font-semibold">Spiele nach hinten verschieben</h3>
+                  <p class="text-sm text-muted-foreground">Verschiebt die Startzeit aller Spiele, die **noch nicht begonnen haben**, um eine bestimmte Anzahl an Minuten.</p>
+                </div>
+                <div class="flex items-center gap-2">
+                  <input hlmInput type="number" #delayMinutes value="15" class="w-20 text-center" />
+                  <span class="text-sm text-muted-foreground font-medium">Min.</span>
+                  <button hlmBtn variant="outline" [disabled]="loading()" (click)="postponeGames(delayMinutes.value)">Verschieben</button>
+                </div>
+              </div>
+
               <div class="flex items-center justify-between p-4 border border-destructive/20 bg-destructive/5 rounded-lg">
                 <div class="space-y-1">
                   <h3 class="font-semibold text-destructive">Gruppenphase beenden & Finals ausrechnen</h3>
@@ -293,6 +305,26 @@ export default class AdminPage {
     } catch (err) {
       console.error('Action failed', err);
       await this.dialogService.alert('Fehler', 'Fehler bei der Aktion.', 'error');
+    } finally {
+      this.loading.set(false);
+    }
+  async postponeGames(minutesStr: string) {
+    const minutes = parseInt(minutesStr, 10);
+    if (isNaN(minutes) || minutes === 0) {
+      await this.dialogService.alert('Fehler', 'Bitte gib eine gültige Anzahl an Minuten ein.', 'error');
+      return;
+    }
+
+    if (!(await this.dialogService.confirm('Spiele verschieben', `Möchtest du alle ungespielten Spiele wirklich um ${minutes} Minuten verschieben?`, true))) return;
+
+    this.loading.set(true);
+    try {
+      await firstValueFrom(this.http.post('/api/actions/postpone-games', { minutes }));
+      await this.dialogService.alert('Erfolg', `Die verbleibenden Spiele wurden erfolgreich um ${minutes} Minuten verschoben.`, 'success');
+      this.competitorsResource.reload();
+    } catch (err) {
+      console.error('Postpone failed', err);
+      await this.dialogService.alert('Fehler', 'Fehler beim Verschieben der Spiele.', 'error');
     } finally {
       this.loading.set(false);
     }
