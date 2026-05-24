@@ -23,6 +23,9 @@ import { firstValueFrom } from 'rxjs';
               <a routerLink="/gameplan" routerLinkActive="text-primary" class="text-sm font-medium transition-colors hover:text-primary">Spielplan</a>
               <a routerLink="/groups" routerLinkActive="text-primary" class="text-sm font-medium transition-colors hover:text-primary">Gruppen</a>
               <a routerLink="/results" routerLinkActive="text-primary" class="text-sm font-medium transition-colors hover:text-primary">Ergebnisse</a>
+              @if (role() === 'admin' || role() === 'referee') {
+                <a routerLink="/referee" routerLinkActive="text-primary" class="text-sm font-medium transition-colors hover:text-primary">Schiedsrichter</a>
+              }
             </div>
           </div>
 
@@ -54,6 +57,9 @@ import { firstValueFrom } from 'rxjs';
             <a routerLink="/gameplan" routerLinkActive="bg-accent" class="block px-3 py-2 rounded-md text-sm font-medium hover:bg-accent transition-colors">Spielplan</a>
             <a routerLink="/groups" routerLinkActive="bg-accent" class="block px-3 py-2 rounded-md text-sm font-medium hover:bg-accent transition-colors">Gruppen</a>
             <a routerLink="/results" routerLinkActive="bg-accent" class="block px-3 py-2 rounded-md text-sm font-medium hover:bg-accent transition-colors">Ergebnisse</a>
+            @if (role() === 'admin' || role() === 'referee') {
+              <a routerLink="/referee" routerLinkActive="bg-accent" class="block px-3 py-2 rounded-md text-sm font-medium hover:bg-accent transition-colors">Schiedsrichter</a>
+            }
             @if (role() === 'admin') {
               <a routerLink="/admin" routerLinkActive="bg-accent" class="block px-3 py-2 rounded-md text-sm font-medium hover:bg-accent transition-colors">Admin</a>
             }

@@ -84,9 +84,9 @@ import type { load } from './results.server';
                 @if (canEdit()) {
                   <td hlmTd class="w-24 text-right">
                     @if (p.competitor1 && p.competitor1.id && p.competitor1.id > 0 && p.competitor2 && p.competitor2.id && p.competitor2.id > 0) {
-                      <button hlmBtn variant="ghost" size="sm" [hlmDialogTriggerFor]="dialog" (click)="openEdit(p)">
+                      <a hlmBtn variant="ghost" size="sm" [routerLink]="['/referee', p.id]">
                         {{ p.points ? 'Edit' : 'Eintragen' }}
-                      </button>
+                      </a>
                     } @else {
                       <span class="text-muted-foreground/30 text-sm px-3">-</span>
                     }
