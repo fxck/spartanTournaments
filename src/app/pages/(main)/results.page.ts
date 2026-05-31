@@ -1,15 +1,7 @@
-import {  Component, inject, signal, computed, viewChild , ChangeDetectionStrategy } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { CommonModule } from '@angular/common';
+import { Component, computed, ChangeDetectionStrategy } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { HlmTableImports } from '@spartan-ng/helm/table';
 import { HlmButton } from '@spartan-ng/helm/button';
-import { HlmDialogImports } from '@spartan-ng/helm/dialog';
-import { HlmInput } from '@spartan-ng/helm/input';
-import { HlmLabel } from '@spartan-ng/helm/label';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { firstValueFrom } from 'rxjs';
-import { BrnDialogImports } from '@spartan-ng/brain/dialog';
 import { injectLoad } from '@analogjs/router';
 import { toSignal } from '@angular/core/rxjs-interop';
 import type { load } from './results.server';
@@ -18,15 +10,9 @@ import type { load } from './results.server';
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-results',
   imports: [
-    CommonModule,
-    ReactiveFormsModule,
     RouterLink,
     ...HlmTableImports,
-    ...HlmDialogImports,
-    ...BrnDialogImports,
     HlmButton,
-    HlmInput,
-    HlmLabel,
   ],
   template: `
     <div class="space-y-8">
@@ -54,7 +40,7 @@ import type { load } from './results.server';
                 <td hlmTd>
                   <div class="flex items-center gap-4">
                     @if (p.competitor1 && p.competitor1.id && p.competitor1.id > 0) {
-                      <a [routerLink]="['/competitor', p.competitor1.id]" 
+                      <a [routerLink]="['/competitor', p.competitor1.id]"
                          class="flex-1 text-right hover:underline hover:text-primary transition-colors"
                          [class.font-bold]="p.points?.competitor1Points > p.points?.competitor2Points">
                         {{ p.competitor1.name }}
@@ -64,7 +50,7 @@ import type { load } from './results.server';
                     }
                     <span class="text-muted-foreground/50 text-xs font-bold italic">VS</span>
                     @if (p.competitor2 && p.competitor2.id && p.competitor2.id > 0) {
-                      <a [routerLink]="['/competitor', p.competitor2.id]" 
+                      <a [routerLink]="['/competitor', p.competitor2.id]"
                          class="flex-1 hover:underline hover:text-primary transition-colors"
                          [class.font-bold]="p.points?.competitor2Points > p.points?.competitor1Points">
                         {{ p.competitor2.name }}
@@ -102,54 +88,14 @@ import type { load } from './results.server';
         </table>
       </div>
     </div>
-
-    <hlm-dialog #dialog>
-      <hlm-dialog-content class="sm:max-w-[425px]" *brnDialogContent="let ctx">
-        @if (editingPairing(); as p) {
-          <hlm-dialog-header>
-            <h3 hlmDialogTitle>Ergebnis eintragen</h3>
-            <p hlmDialogDescription>@if (p.gamenumber > 0) { Spiel Nr. {{ p.gamenumber }} } @else { Spiel } auf Court {{ p.court }}</p>
-          </hlm-dialog-header>
-          
-          <form [formGroup]="resultForm" (ngSubmit)="saveResult(ctx)" class="grid gap-6 py-4">
-            <div class="grid grid-cols-2 gap-8 items-center">
-              <div class="space-y-2 text-center">
-                <label hlmLabel>{{ p.competitor1.name }}</label>
-                <input hlmInput type="number" formControlName="competitor1Points" class="text-center text-3xl h-20" />
-              </div>
-              <div class="space-y-2 text-center">
-                <label hlmLabel>{{ p.competitor2.name }}</label>
-                <input hlmInput type="number" formControlName="competitor2Points" class="text-center text-3xl h-20" />
-              </div>
-            </div>
-
-            <div class="flex justify-end gap-2 pt-4">
-              <button hlmBtn variant="ghost" type="button" (click)="ctx.close()">Abbrechen</button>
-              <button hlmBtn [disabled]="resultForm.invalid || loading()">Speichern</button>
-            </div>
-          </form>
-        }
-      </hlm-dialog-content>
-    </hlm-dialog>
   `,
 })
 export default class ResultsPage {
-  private fb = inject(FormBuilder);
-  private http = inject(HttpClient);
-  
   data = toSignal(injectLoad<typeof load>());
-  
+
   pairings = computed(() => this.data()?.pairings ?? []);
   gamepoints = computed(() => this.data()?.gamepoints ?? []);
   role = computed(() => this.data()?.role ?? null);
-  
-  loading = signal(false);
-  editingPairing = signal<any | null>(null);
-
-  resultForm = this.fb.group({
-    competitor1Points: [0, [Validators.required, Validators.min(0)]],
-    competitor2Points: [0, [Validators.required, Validators.min(0)]],
-  });
 
   canEdit = computed(() => this.role() === 'admin' || this.role() === 'referee');
 
@@ -161,34 +107,4 @@ export default class ResultsPage {
       points: gps.find((g: any) => g.pairingID === p.id)
     }));
   });
-
-  openEdit(p: any) {
-    this.editingPairing.set(p);
-    this.resultForm.patchValue({
-      competitor1Points: p.points?.competitor1Points ?? 0,
-      competitor2Points: p.points?.competitor2Points ?? 0,
-    });
-  }
-
-  async saveResult(ctx: any) {
-    const p = this.editingPairing();
-    if (!p || this.resultForm.invalid) return;
-    
-    this.loading.set(true);
-    try {
-      const payload = {
-        ...this.resultForm.value,
-        pairingID: p.id
-      };
-      await firstValueFrom(this.http.post<any>('/api/gamepoints', payload));
-      ctx.close();
-      this.editingPairing.set(null);
-      // Reload page to see new results
-      window.location.reload();
-    } catch (err) {
-      console.error('Save failed', err);
-    } finally {
-      this.loading.set(false);
-    }
-  }
 }

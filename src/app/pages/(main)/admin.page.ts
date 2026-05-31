@@ -187,13 +187,15 @@ export const routeMeta = defineRouteMeta({
 
               <div class="flex flex-col md:flex-row md:items-center justify-between p-4 border rounded-lg gap-4">
                 <div class="space-y-1 flex-1">
-                  <h3 class="font-semibold">Spiele nach hinten verschieben</h3>
-                  <p class="text-sm text-muted-foreground">Verschiebt die Startzeit aller Spiele, die **noch nicht begonnen haben**, um eine bestimmte Anzahl an Minuten.</p>
+                  <h3 class="font-semibold">Spiele verschieben</h3>
+                  <p class="text-sm text-muted-foreground">Verschiebt die Startzeit aller noch nicht gespielten Spiele ab einer Spielnummer um die angegebenen Minuten. Negative Werte ziehen die Spiele vor (z.B. um eine Fehleingabe zu korrigieren).</p>
                 </div>
                 <div class="flex items-center gap-2">
+                  <span class="text-sm text-muted-foreground font-medium">ab Nr.</span>
+                  <input hlmInput type="number" #fromGame min="1" placeholder="alle" class="w-20 text-center" />
                   <input hlmInput type="number" #delayMinutes value="15" class="w-20 text-center" />
                   <span class="text-sm text-muted-foreground font-medium">Min.</span>
-                  <button hlmBtn variant="outline" [disabled]="loading()" (click)="postponeGames(delayMinutes.value)">Verschieben</button>
+                  <button hlmBtn variant="outline" [disabled]="loading()" (click)="postponeGames(fromGame.value, delayMinutes.value)">Verschieben</button>
                 </div>
               </div>
 
@@ -333,19 +335,33 @@ export default class AdminPage {
     );
   }
 
-  async postponeGames(minutesStr: string) {
+  async postponeGames(fromGameNumberStr: string, minutesStr: string) {
     const minutes = parseInt(minutesStr, 10);
     if (isNaN(minutes) || minutes === 0) {
       await this.dialogService.alert('Fehler', 'Bitte gib eine gültige Anzahl an Minuten ein.', 'error');
       return;
     }
 
-    if (!(await this.dialogService.confirm('Spiele verschieben', `Möchtest du alle ungespielten Spiele wirklich um ${minutes} Minuten verschieben?`, true))) return;
+    // Empty game number means "all not-yet-played games".
+    const hasFromGame = fromGameNumberStr.trim() !== '';
+    const fromGameNumber = hasFromGame ? parseInt(fromGameNumberStr, 10) : undefined;
+    if (hasFromGame && (isNaN(fromGameNumber!) || fromGameNumber! < 1)) {
+      await this.dialogService.alert('Fehler', 'Bitte gib eine gültige Spielnummer ein.', 'error');
+      return;
+    }
+
+    const direction = minutes > 0 ? 'nach hinten' : 'vor';
+    const scope = hasFromGame ? `ab Nr. ${fromGameNumber}` : 'alle noch nicht gespielten';
+    if (!(await this.dialogService.confirm(
+      'Spiele verschieben',
+      `Möchtest du ${scope} Spiele wirklich um ${Math.abs(minutes)} Minuten ${direction} verschieben?`,
+      { confirmLabel: 'Verschieben' }
+    ))) return;
 
     await this.runAction(
-      () => firstValueFrom(this.http.post('/api/actions/postpone-games', { minutes })),
+      () => firstValueFrom(this.http.post('/api/actions/postpone-games', { minutes, fromGameNumber })),
       'Postpone failed',
-      `Die verbleibenden Spiele wurden um ${minutes} Minuten verschoben.`,
+      `Die Spiele (${scope}) wurden um ${Math.abs(minutes)} Minuten ${direction} verschoben.`,
       'Fehler beim Verschieben der Spiele.'
     );
   }

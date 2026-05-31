@@ -9,7 +9,7 @@ import { SimpleDialogButton, SimpleDialogService } from './simple-dialog.service
   selector: 'app-simple-dialog',
   imports: [CommonModule, ...HlmAlertDialogImports, HlmButton],
   template: `
-    <hlm-alert-dialog [state]="state()">
+    <hlm-alert-dialog [state]="state()" (closed)="onClosed()">
       <hlm-alert-dialog-content
         *hlmAlertDialogPortal="let ctx"
         [class]="computedClass()"
@@ -166,5 +166,9 @@ export class SimpleDialogComponent {
     if (cancel) {
       this.onAction(cancel);
     }
+  }
+
+  onClosed(): void {
+    this.#dialogs.notifyClosed();
   }
 }

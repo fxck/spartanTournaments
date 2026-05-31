@@ -2,42 +2,36 @@ import { defineEventHandler, readBody, createError } from 'h3';
 import { requireAdmin } from '../../../session';
 import { db } from '../../../db';
 import { pairings, gamePoints } from '../../../db/schema';
-import { eq, notInArray } from 'drizzle-orm';
+import { eq } from 'drizzle-orm';
+import { parsePostponeRequest, selectPairingsToShift, shiftStartTime } from '../../../postpone';
 
 export default defineEventHandler(async (event) => {
   await requireAdmin(event);
   const body = await readBody(event);
-  const minutes = parseInt(body.minutes, 10);
 
-  if (isNaN(minutes)) {
-    throw createError({ statusCode: 400, statusMessage: 'Invalid minutes value' });
+  const parsed = parsePostponeRequest(body.minutes, body.fromGameNumber);
+  if (!parsed.ok) {
+    throw createError({ statusCode: 400, statusMessage: parsed.error });
   }
+  const { minutes, fromGameNumber } = parsed.value;
 
-  await db.transaction(async (tx) => {
-    // 1. Get all pairing IDs that already have scores entered
+  const shifted = await db.transaction(async (tx) => {
+    // Played = has a result recorded. Those games keep their time.
     const played = await tx.select({ pairingID: gamePoints.pairingID }).from(gamePoints);
-    const playedIds = played.map(gp => gp.pairingID);
+    const playedIds = played.map((gp) => gp.pairingID);
 
-    // 2. Select pairings that have NOT started yet
-    let unstartedPairings;
-    if (playedIds.length > 0) {
-      unstartedPairings = await tx
-        .select()
-        .from(pairings)
-        .where(notInArray(pairings.id, playedIds));
-    } else {
-      unstartedPairings = await tx.select().from(pairings);
-    }
+    const allPairings = await tx.select().from(pairings);
+    const toShift = selectPairingsToShift(allPairings, playedIds, fromGameNumber);
 
-    // 3. Shift the start time for each unstarted pairing
-    for (const p of unstartedPairings) {
-      const newStartTime = new Date(p.startTime.getTime() + minutes * 60000);
+    for (const p of toShift) {
       await tx
         .update(pairings)
-        .set({ startTime: newStartTime })
+        .set({ startTime: shiftStartTime(p.startTime, minutes) })
         .where(eq(pairings.id, p.id));
     }
+
+    return toShift.length;
   });
 
-  return { ok: true };
+  return { ok: true, shifted };
 });

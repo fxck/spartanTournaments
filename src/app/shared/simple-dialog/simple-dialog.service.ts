@@ -19,6 +19,11 @@ export interface SimpleDialog {
   action?: (result: string) => void;
 }
 
+export interface ConfirmOptions {
+  destructive?: boolean;
+  confirmLabel?: string;
+}
+
 export const dlgBtnOk: SimpleDialogButton = {
   label: 'OK',
   value: 'ok',
@@ -51,11 +56,19 @@ export const dlgBtnDelete: SimpleDialogButton = {
   providedIn: 'root',
 })
 export class SimpleDialogService {
-  readonly dialogs = signal<SimpleDialog[]>([]);
+  // Dialogs waiting to be shown. The one currently on screen lives in `#current`,
+  // never in this queue, so we can serialize show/close transitions cleanly.
+  readonly #queue = signal<SimpleDialog[]>([]);
+  readonly #current = signal<SimpleDialog | undefined>(undefined);
 
-  actualDialog = computed<SimpleDialog | undefined>(() => {
-    return this.dialogs()[0] ?? undefined;
-  });
+  // True between dismiss() and the brain dialog's `closed` event. Brain keeps its
+  // internal dialog ref alive during the close animation (closeDelay), and its
+  // open() silently bails while that ref exists. Opening the next dialog before
+  // the previous one has fully closed therefore wedges the whole controlled-state
+  // machine — so we wait for `notifyClosed()` before advancing the queue.
+  #closing = false;
+
+  readonly actualDialog = this.#current.asReadonly();
 
   title = computed(() => this.actualDialog()?.title ?? '');
   description = computed(() => this.actualDialog()?.description ?? '');
@@ -64,18 +77,37 @@ export class SimpleDialogService {
   otherButtons = computed(() => this.actualDialog()?.otherButtons ?? []);
   type = computed(() => this.actualDialog()?.type ?? 'message');
   transparentBackground = computed(() => this.actualDialog()?.transparentBackground ?? false);
-  dialogState = computed(() => this.actualDialog() ? 'open' : 'closed');
+  dialogState = computed(() => (this.#current() ? 'open' : 'closed'));
 
   create(dialog: SimpleDialog): void {
-    this.dialogs.set([...this.dialogs(), dialog]);
+    this.#queue.update((q) => [...q, dialog]);
+    this.#tryShowNext();
   }
 
   dismiss(): void {
-    this.dialogs.set(this.dialogs().slice(1));
+    if (!this.#current()) return;
+    // Drive the brain dialog to 'closed' and wait for its close animation to
+    // finish (notifyClosed) before showing whatever is queued next.
+    this.#closing = true;
+    this.#current.set(undefined);
+  }
+
+  /** Called by SimpleDialogComponent once the alert-dialog has fully closed. */
+  notifyClosed(): void {
+    this.#closing = false;
+    this.#tryShowNext();
+  }
+
+  #tryShowNext(): void {
+    if (this.#current() || this.#closing) return;
+    const next = this.#queue()[0];
+    if (!next) return;
+    this.#queue.update((q) => q.slice(1));
+    this.#current.set(next);
   }
 
   onAction(buttonValue: string): void {
-    const dialog = this.actualDialog();
+    const dialog = this.#current();
     if (dialog?.action) {
       dialog.action(buttonValue);
     }
@@ -94,15 +126,22 @@ export class SimpleDialogService {
     });
   }
 
-  // Helper helper to make standard confirm simple
-  confirm(title: string, description: string, destructive = false): Promise<boolean> {
+  // Helper helper to make standard confirm simple. Pass `true` for a destructive
+  // (red, "Löschen") confirm, or an options object to set a custom confirm label.
+  confirm(title: string, description: string, options: boolean | ConfirmOptions = {}): Promise<boolean> {
+    const opts: ConfirmOptions = typeof options === 'boolean' ? { destructive: options } : options;
+    const destructive = opts.destructive ?? false;
     return new Promise((resolve) => {
       this.create({
         title,
         description,
-        mainButton: destructive ? dlgBtnDelete : dlgBtnConfirm,
+        mainButton: {
+          label: opts.confirmLabel ?? (destructive ? 'Löschen' : 'Bestätigen'),
+          value: 'confirm',
+          variant: destructive ? 'destructive' : 'default',
+        },
         cancelButton: dlgBtnCancel,
-        action: (res) => resolve(res === 'confirm' || res === 'delete'),
+        action: (res) => resolve(res === 'confirm'),
       });
     });
   }
