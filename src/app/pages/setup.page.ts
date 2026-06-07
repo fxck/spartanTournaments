@@ -131,7 +131,14 @@ export default class SetupPage {
     if (this.setupForm.invalid) return;
     this.loading.set(true);
     try {
-      await lastValueFrom(this.http.post('/api/tournament/setup', this.setupForm.value));
+      const payload = {
+        ...this.setupForm.value,
+        // datetime-local is local wall-clock; convert to a true instant in the
+        // browser (= venue) timezone so storage is correct on any server.
+        tournamentStartTime: new Date(this.setupForm.value.tournamentStartTime!).toISOString(),
+        finalsStartTime: new Date(this.setupForm.value.finalsStartTime!).toISOString(),
+      };
+      await lastValueFrom(this.http.post('/api/tournament/setup', payload));
       this.router.navigate(['/admin']);
     } catch (err) {
       console.error('Setup failed', err);

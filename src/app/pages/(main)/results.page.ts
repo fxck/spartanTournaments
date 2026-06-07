@@ -28,8 +28,8 @@ import type { load } from './results.server';
             <div class="flex items-center justify-between gap-2 mb-3">
               <span class="font-mono text-xs text-muted-foreground">#{{ p.gamenumber > 0 ? p.gamenumber : '-' }}</span>
               @if (canEdit() && p.competitor1 && p.competitor1.id && p.competitor1.id > 0 && p.competitor2 && p.competitor2.id && p.competitor2.id > 0) {
-                <a hlmBtn variant="outline" size="sm" [routerLink]="['/referee', p.id]" class="-mr-2 h-7">
-                  {{ p.points ? 'Edit' : 'Eintragen' }}
+                <a hlmBtn variant="outline" size="sm" [routerLink]="['/referee', p.id]" class="-mr-2 h-7 font-black tabular-nums">
+                  {{ p.points ? p.points.competitor1Points + ':' + p.points.competitor2Points : 'Eintragen' }}
                 </a>
               }
             </div>
@@ -72,10 +72,7 @@ import type { load } from './results.server';
             <tr hlmTr>
               <th hlmTh class="w-16">Nr.</th>
               <th hlmTh>Begegnung</th>
-              <th hlmTh class="w-24 text-center border-l">Ergebnis</th>
-              @if (canEdit()) {
-                <th hlmTh class="w-24 text-right">Aktion</th>
-              }
+              <th hlmTh class="w-28 text-center border-l">Ergebnis</th>
             </tr>
           </thead>
           <tbody hlmTBody>
@@ -105,28 +102,25 @@ import type { load } from './results.server';
                     }
                   </div>
                 </td>
-                <td hlmTd class="w-24 text-center font-black text-xl border-l bg-muted/20">
-                  @if (p.points) {
-                    {{ p.points.competitor1Points }}:{{ p.points.competitor2Points }}
+                <td hlmTd class="w-28 text-center border-l bg-muted/20">
+                  @if (canEdit() && p.competitor1 && p.competitor1.id && p.competitor1.id > 0 && p.competitor2 && p.competitor2.id && p.competitor2.id > 0) {
+                    <a hlmBtn variant="outline" size="sm" [routerLink]="['/referee', p.id]" class="shadow-sm font-black text-base tabular-nums">
+                      @if (p.points) {
+                        {{ p.points.competitor1Points }}:{{ p.points.competitor2Points }}
+                      } @else {
+                        -:-
+                      }
+                    </a>
+                  } @else if (p.points) {
+                    <span class="font-black text-xl tabular-nums">{{ p.points.competitor1Points }}:{{ p.points.competitor2Points }}</span>
                   } @else {
-                    <span class="text-muted-foreground/30 font-normal">-:-</span>
+                    <span class="text-muted-foreground/30 font-normal text-xl">-:-</span>
                   }
                 </td>
-                @if (canEdit()) {
-                  <td hlmTd class="w-24 text-right">
-                    @if (p.competitor1 && p.competitor1.id && p.competitor1.id > 0 && p.competitor2 && p.competitor2.id && p.competitor2.id > 0) {
-                      <a hlmBtn variant="outline" size="sm" [routerLink]="['/referee', p.id]" class="shadow-sm">
-                        {{ p.points ? 'Edit' : 'Eintragen' }}
-                      </a>
-                    } @else {
-                      <span class="text-muted-foreground/30 text-sm px-3">-</span>
-                    }
-                  </td>
-                }
               </tr>
             } @empty {
               <tr hlmTr>
-                <td hlmTd colspan="4" class="text-center py-24 text-muted-foreground italic">Noch keine Spiele geplant.</td>
+                <td hlmTd colspan="3" class="text-center py-24 text-muted-foreground italic">Noch keine Spiele geplant.</td>
               </tr>
             }
           </tbody>

@@ -320,8 +320,8 @@ export default class AdminPage {
   }
 
   /**
-   * Formats a UTC date (from the server) into the `YYYY-MM-DDTHH:mm` string that
-   * a `datetime-local` input expects in the user's local timezone. Using
+   * Formats an instant (from the server) into the `YYYY-MM-DDTHH:mm` string that
+   * a `datetime-local` input expects, in the viewer's local timezone. Using
    * `toISOString()` here would feed UTC into a local input and shift the displayed
    * time by the timezone offset on every reload.
    */
@@ -331,11 +331,26 @@ export default class AdminPage {
     return local.toISOString().slice(0, 16);
   }
 
+  /**
+   * Converts a `datetime-local` value (local wall-clock, no timezone) into a
+   * true ISO instant for the server. The browser's timezone — which is the
+   * venue's timezone — does the conversion, so storage is correct regardless of
+   * the server's timezone.
+   */
+  private toInstant(localValue: string): string {
+    return new Date(localValue).toISOString();
+  }
+
   async updateDetails() {
     if (this.detailsForm.invalid) return;
     this.loading.set(true);
     try {
-      await firstValueFrom(this.http.put('/api/tournament', this.detailsForm.value));
+      const payload = {
+        ...this.detailsForm.value,
+        tournamentStartTime: this.toInstant(this.detailsForm.value.tournamentStartTime!),
+        finalsStartTime: this.toInstant(this.detailsForm.value.finalsStartTime!),
+      };
+      await firstValueFrom(this.http.put('/api/tournament', payload));
       await this.dialogService.alert('Einstellungen', 'Einstellungen erfolgreich gespeichert.', 'success');
     } catch (err) {
       console.error('Update failed', err);
