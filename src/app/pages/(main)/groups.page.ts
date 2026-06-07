@@ -21,7 +21,30 @@ import type { load } from './groups.server';
         @for (group of groupList(); track group.id) {
           <div class="space-y-4">
             <h2 class="text-2xl font-bold px-2 text-primary">Gruppe {{ group.id }}</h2>
-            <div hlmTableContainer class="border rounded-lg overflow-hidden shadow-sm">
+
+            <!-- Mobile: Karten-Liste -->
+            <div class="md:hidden border rounded-lg overflow-hidden shadow-sm divide-y">
+              @for (c of group.competitors; track c.id; let i = $index) {
+                <div class="flex items-center gap-3 p-3">
+                  <span class="w-6 text-center font-bold shrink-0">{{ i + 1 }}</span>
+                  <a [routerLink]="['/competitor', c.id]"
+                     class="flex-1 min-w-0 font-medium break-words hover:underline hover:text-primary transition-colors">
+                    {{ c.name }}
+                  </a>
+                  <div class="flex gap-3 shrink-0 text-center leading-tight">
+                    <div class="w-9"><div class="font-bold text-sm">{{ c.matchPoints }}</div><div class="text-[10px] uppercase text-muted-foreground">MP</div></div>
+                    <div class="w-9"><div class="text-sm">{{ c.gamePoints }}</div><div class="text-[10px] uppercase text-muted-foreground">GP</div></div>
+                    <div class="w-10">
+                      <div class="text-sm font-mono" [class.text-green-600]="c.diff > 0" [class.text-red-600]="c.diff < 0">{{ c.diff > 0 ? '+' : '' }}{{ c.diff }}</div>
+                      <div class="text-[10px] uppercase text-muted-foreground">Diff</div>
+                    </div>
+                  </div>
+                </div>
+              }
+            </div>
+
+            <!-- Desktop: Tabelle -->
+            <div hlmTableContainer class="hidden md:block border rounded-lg overflow-hidden shadow-sm">
               <table hlmTable>
                 <thead hlmTHead>
                   <tr hlmTr>

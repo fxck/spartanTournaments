@@ -138,19 +138,51 @@ export const routeMeta = defineRouteMeta({
                   <table hlmTable>
                     <thead hlmThead>
                       <tr hlmTr>
-                        <th hlmTh class="w-16">ID</th>
-                        <th hlmTh>Name</th>
+                        <th hlmTh class="w-16">
+                          <button type="button" class="flex items-center gap-1 font-medium hover:text-foreground" (click)="toggleSort('id')">
+                            ID
+                            <span class="text-muted-foreground">{{ sortIndicator('id') }}</span>
+                          </button>
+                        </th>
+                        <th hlmTh>
+                          <button type="button" class="flex items-center gap-1 font-medium hover:text-foreground" (click)="toggleSort('name')">
+                            Name
+                            <span class="text-muted-foreground">{{ sortIndicator('name') }}</span>
+                          </button>
+                        </th>
+                        <th hlmTh class="w-24">
+                          <button type="button" class="flex items-center gap-1 font-medium hover:text-foreground" (click)="toggleSort('drawNumber')">
+                            Losnr.
+                            <span class="text-muted-foreground">{{ sortIndicator('drawNumber') }}</span>
+                          </button>
+                        </th>
                         <th hlmTh class="w-24 text-right">Aktionen</th>
                       </tr>
                     </thead>
                     <tbody hlmTbody>
                       @for (c of competitors(); track c.id) {
                         <tr hlmTr>
-                          <td hlmTd class="font-medium">{{ c.id }}</td>
-                          <td hlmTd>{{ c.name }}</td>
-                          <td hlmTd class="text-right">
-                            <button hlmBtn variant="destructive" size="sm" (click)="deleteCompetitor(c.id)">Löschen</button>
-                          </td>
+                          @if (editingId() === c.id) {
+                            <td hlmTd class="font-medium">{{ c.id }}</td>
+                            <td hlmTd>
+                              <input hlmInput [(ngModel)]="editName" [name]="'editName' + c.id" class="h-8" />
+                            </td>
+                            <td hlmTd>
+                              <input hlmInput type="number" min="1" [(ngModel)]="editDrawNumber" [name]="'editDraw' + c.id" placeholder="—" class="h-8 w-20" />
+                            </td>
+                            <td hlmTd class="text-right whitespace-nowrap">
+                              <button hlmBtn size="sm" [disabled]="loading()" (click)="saveCompetitor(c.id)">Speichern</button>
+                              <button hlmBtn variant="ghost" size="sm" (click)="cancelEdit()">Abbrechen</button>
+                            </td>
+                          } @else {
+                            <td hlmTd class="font-medium">{{ c.id }}</td>
+                            <td hlmTd>{{ c.name }}</td>
+                            <td hlmTd>{{ c.drawNumber ?? '—' }}</td>
+                            <td hlmTd class="text-right whitespace-nowrap">
+                              <button hlmBtn variant="outline" size="sm" [disabled]="loading()" (click)="startEdit(c)">Bearbeiten</button>
+                              <button hlmBtn variant="destructive" size="sm" (click)="deleteCompetitor(c.id)">Löschen</button>
+                            </td>
+                          }
                         </tr>
                       }
                     </tbody>
@@ -168,8 +200,8 @@ export const routeMeta = defineRouteMeta({
               <h2 hlmCardTitle class="text-destructive">Administrative Aktionen</h2>
               <p hlmCardDescription>Kritische Aktionen zur Generierung und Steuerung des Turniers.</p>
             </header>
-            <div hlmCardContent class="grid gap-6">
-              <div class="flex items-center justify-between p-4 border rounded-lg">
+            <div hlmCardContent class="grid grid-cols-1 gap-6">
+              <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between p-4 border rounded-lg">
                 <div class="space-y-1">
                   <h3 class="font-semibold">Auslosung</h3>
                   <p class="text-sm text-muted-foreground">Teilt alle registrierten Teilnehmer zufällig in Gruppen auf.</p>
@@ -177,7 +209,7 @@ export const routeMeta = defineRouteMeta({
                 <button hlmBtn variant="outline" [disabled]="loading()" (click)="action('random-draw')">Zufällige Auslosung</button>
               </div>
 
-              <div class="flex items-center justify-between p-4 border rounded-lg">
+              <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between p-4 border rounded-lg">
                 <div class="space-y-1">
                   <h3 class="font-semibold">Turnierspiele generieren</h3>
                   <p class="text-sm text-muted-foreground">Erstellt den Spielplan für die Gruppenphase basierend auf der Auslosung.</p>
@@ -190,7 +222,7 @@ export const routeMeta = defineRouteMeta({
                   <h3 class="font-semibold">Spiele verschieben</h3>
                   <p class="text-sm text-muted-foreground">Verschiebt die Startzeit aller noch nicht gespielten Spiele ab einer Spielnummer um die angegebenen Minuten. Negative Werte ziehen die Spiele vor (z.B. um eine Fehleingabe zu korrigieren).</p>
                 </div>
-                <div class="flex items-center gap-2">
+                <div class="flex flex-wrap items-center gap-2">
                   <span class="text-sm text-muted-foreground font-medium">ab Nr.</span>
                   <input hlmInput type="number" #fromGame min="1" placeholder="alle" class="w-20 text-center" />
                   <input hlmInput type="number" #delayMinutes value="15" class="w-20 text-center" />
@@ -199,7 +231,7 @@ export const routeMeta = defineRouteMeta({
                 </div>
               </div>
 
-              <div class="flex items-center justify-between p-4 border border-destructive/20 bg-destructive/5 rounded-lg">
+              <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between p-4 border border-destructive/20 bg-destructive/5 rounded-lg">
                 <div class="space-y-1">
                   <h3 class="font-semibold text-destructive">Gruppenphase beenden & Finals ausrechnen</h3>
                   <p class="text-sm text-muted-foreground">Berechnet die Tabellen und generiert den Final-Spielplan (Halbfinale, Finale etc.).</p>
@@ -225,7 +257,40 @@ export default class AdminPage {
     loader: () => firstValueFrom(this.http.get<any[]>('/api/competitors')),
   });
 
-  competitors = computed(() => this.competitorsResource.value() ?? []);
+  sortColumn = signal<'id' | 'name' | 'drawNumber'>('id');
+  sortDirection = signal<'asc' | 'desc'>('asc');
+
+  competitors = computed(() => {
+    const list = [...(this.competitorsResource.value() ?? [])];
+    const column = this.sortColumn();
+    const dir = this.sortDirection() === 'asc' ? 1 : -1;
+    return list.sort((a, b) => {
+      const av = a[column];
+      const bv = b[column];
+      // Leere Werte (z.B. noch keine Losnummer) immer ans Ende, unabhängig von der Richtung.
+      if (av == null && bv == null) return 0;
+      if (av == null) return 1;
+      if (bv == null) return -1;
+      const cmp = typeof av === 'string'
+        ? String(av).localeCompare(String(bv), 'de', { sensitivity: 'base' })
+        : av - bv;
+      return cmp * dir;
+    });
+  });
+
+  toggleSort(column: 'id' | 'name' | 'drawNumber') {
+    if (this.sortColumn() === column) {
+      this.sortDirection.update((d) => (d === 'asc' ? 'desc' : 'asc'));
+    } else {
+      this.sortColumn.set(column);
+      this.sortDirection.set('asc');
+    }
+  }
+
+  sortIndicator(column: 'id' | 'name' | 'drawNumber') {
+    if (this.sortColumn() !== column) return '';
+    return this.sortDirection() === 'asc' ? '▲' : '▼';
+  }
 
   detailsForm = this.fb.group({
     name: ['', Validators.required],
@@ -245,13 +310,25 @@ export default class AdminPage {
       if (data?.tournament) {
         this.detailsForm.patchValue({
           ...data.tournament,
-          tournamentStartTime: new Date(data.tournament.tournamentStartTime).toISOString().slice(0, 16),
-          finalsStartTime: new Date(data.tournament.finalsStartTime).toISOString().slice(0, 16),
+          tournamentStartTime: this.toLocalDateTimeInput(data.tournament.tournamentStartTime),
+          finalsStartTime: this.toLocalDateTimeInput(data.tournament.finalsStartTime),
           adminPassword: '',
           refereePassword: '',
         });
       }
     });
+  }
+
+  /**
+   * Formats a UTC date (from the server) into the `YYYY-MM-DDTHH:mm` string that
+   * a `datetime-local` input expects in the user's local timezone. Using
+   * `toISOString()` here would feed UTC into a local input and shift the displayed
+   * time by the timezone offset on every reload.
+   */
+  private toLocalDateTimeInput(value: string | Date): string {
+    const date = new Date(value);
+    const local = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
+    return local.toISOString().slice(0, 16);
   }
 
   async updateDetails() {
@@ -275,6 +352,42 @@ export default class AdminPage {
       this.competitorsResource.reload();
     } catch (err) {
       console.error('Add failed', err);
+    } finally {
+      this.loading.set(false);
+    }
+  }
+
+  editingId = signal<number | null>(null);
+  editName = '';
+  editDrawNumber: number | null = null;
+
+  startEdit(c: { id: number; name: string; drawNumber: number | null }) {
+    this.editingId.set(c.id);
+    this.editName = c.name;
+    this.editDrawNumber = c.drawNumber ?? null;
+  }
+
+  cancelEdit() {
+    this.editingId.set(null);
+  }
+
+  async saveCompetitor(id: number) {
+    const name = this.editName.trim();
+    if (!name) {
+      await this.dialogService.alert('Fehler', 'Bitte gib einen Namen ein.', 'error');
+      return;
+    }
+    this.loading.set(true);
+    try {
+      await firstValueFrom(this.http.put(`/api/competitors/${id}`, {
+        name,
+        drawNumber: this.editDrawNumber,
+      }));
+      this.editingId.set(null);
+      this.competitorsResource.reload();
+    } catch (err: any) {
+      console.error('Update failed', err);
+      await this.dialogService.alert('Fehler', err?.error?.statusMessage ?? err?.error?.message ?? 'Teilnehmer konnte nicht gespeichert werden.', 'error');
     } finally {
       this.loading.set(false);
     }

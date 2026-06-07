@@ -21,7 +21,52 @@ import type { load } from './results.server';
         <p class="text-muted-foreground mt-2">Alle abgeschlossenen und laufenden Spiele.</p>
       </header>
 
-      <div hlmTableContainer class="border rounded-lg overflow-hidden shadow-sm">
+      <!-- Mobile: Karten (Namen untereinander mit eigenem Punktestand) -->
+      <div class="space-y-3 md:hidden">
+        @for (p of results(); track p.id) {
+          <div class="border rounded-lg p-4 shadow-sm">
+            <div class="flex items-center justify-between gap-2 mb-3">
+              <span class="font-mono text-xs text-muted-foreground">#{{ p.gamenumber > 0 ? p.gamenumber : '-' }}</span>
+              @if (canEdit() && p.competitor1 && p.competitor1.id && p.competitor1.id > 0 && p.competitor2 && p.competitor2.id && p.competitor2.id > 0) {
+                <a hlmBtn variant="outline" size="sm" [routerLink]="['/referee', p.id]" class="-mr-2 h-7">
+                  {{ p.points ? 'Edit' : 'Eintragen' }}
+                </a>
+              }
+            </div>
+            <div class="space-y-2">
+              <div class="flex items-baseline justify-between gap-3">
+                @if (p.competitor1 && p.competitor1.id && p.competitor1.id > 0) {
+                  <a [routerLink]="['/competitor', p.competitor1.id]"
+                     class="min-w-0 break-words hover:underline hover:text-primary transition-colors"
+                     [class.font-bold]="p.points?.competitor1Points > p.points?.competitor2Points">
+                    {{ p.competitor1.name }}
+                  </a>
+                } @else {
+                  <span class="min-w-0 text-muted-foreground italic">Offen</span>
+                }
+                <span class="font-black text-xl tabular-nums shrink-0">{{ p.points ? p.points.competitor1Points : '–' }}</span>
+              </div>
+              <div class="flex items-baseline justify-between gap-3">
+                @if (p.competitor2 && p.competitor2.id && p.competitor2.id > 0) {
+                  <a [routerLink]="['/competitor', p.competitor2.id]"
+                     class="min-w-0 break-words hover:underline hover:text-primary transition-colors"
+                     [class.font-bold]="p.points?.competitor2Points > p.points?.competitor1Points">
+                    {{ p.competitor2.name }}
+                  </a>
+                } @else {
+                  <span class="min-w-0 text-muted-foreground italic">Offen</span>
+                }
+                <span class="font-black text-xl tabular-nums shrink-0">{{ p.points ? p.points.competitor2Points : '–' }}</span>
+              </div>
+            </div>
+          </div>
+        } @empty {
+          <div class="text-center py-24 text-muted-foreground italic">Noch keine Spiele geplant.</div>
+        }
+      </div>
+
+      <!-- Desktop: Tabelle -->
+      <div hlmTableContainer class="hidden md:block border rounded-lg overflow-hidden shadow-sm">
         <table hlmTable>
           <thead hlmTHead>
             <tr hlmTr>
@@ -70,7 +115,7 @@ import type { load } from './results.server';
                 @if (canEdit()) {
                   <td hlmTd class="w-24 text-right">
                     @if (p.competitor1 && p.competitor1.id && p.competitor1.id > 0 && p.competitor2 && p.competitor2.id && p.competitor2.id > 0) {
-                      <a hlmBtn variant="ghost" size="sm" [routerLink]="['/referee', p.id]">
+                      <a hlmBtn variant="outline" size="sm" [routerLink]="['/referee', p.id]" class="shadow-sm">
                         {{ p.points ? 'Edit' : 'Eintragen' }}
                       </a>
                     } @else {

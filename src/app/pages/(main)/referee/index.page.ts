@@ -28,7 +28,41 @@ export const routeMeta = defineRouteMeta({
         <p class="text-muted-foreground mt-2">Offene Spiele ohne eingetragenes Ergebnis, sortiert nach Startzeit.</p>
       </header>
 
-      <div hlmTableContainer class="border rounded-lg overflow-hidden shadow-sm bg-card">
+      <!-- Mobile: Karten -->
+      <div class="space-y-3 md:hidden">
+        @for (p of pairings(); track p.id) {
+          <div class="border rounded-lg p-4 shadow-sm bg-card">
+            <div class="flex items-center justify-between text-xs text-muted-foreground mb-3">
+              <span class="font-mono">#{{ p.gamenumber > 0 ? p.gamenumber : '-' }}</span>
+              <span class="flex items-center gap-2">
+                <span class="font-semibold text-foreground">{{ p.startTime | date:'HH:mm' }} Uhr</span>
+                <span class="px-2 py-0.5 bg-primary/10 text-primary font-bold rounded-md">Court {{ p.court }}</span>
+              </span>
+            </div>
+            <div class="space-y-1 text-center mb-4">
+              <div class="font-medium break-words">{{ p.competitor1?.name }}</div>
+              <div class="text-muted-foreground/50 text-xs italic font-bold">VS</div>
+              <div class="font-medium break-words">{{ p.competitor2?.name }}</div>
+            </div>
+            <a hlmBtn variant="outline" size="sm" [routerLink]="['/referee', p.id]" class="w-full gap-1 shadow-sm">
+              Eintragen
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+              </svg>
+            </a>
+          </div>
+        } @empty {
+          <div class="flex flex-col items-center justify-center gap-3 py-20 text-center text-muted-foreground italic">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <span>Super! Alle aktiven Spiele haben bereits ein Ergebnis.</span>
+          </div>
+        }
+      </div>
+
+      <!-- Desktop: Tabelle -->
+      <div hlmTableContainer class="hidden md:block border rounded-lg overflow-hidden shadow-sm bg-card">
         <table hlmTable>
           <thead hlmTHead>
             <tr hlmTr>

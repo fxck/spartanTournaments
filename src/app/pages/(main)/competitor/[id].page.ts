@@ -31,7 +31,37 @@ import type { load } from './[id].server';
 
           <!-- Schedule & Results -->
           <div hlmTabsContent="schedule" class="mt-6">
-            <div hlmTableContainer class="border rounded-lg overflow-hidden shadow-sm">
+            <!-- Mobile: Karten -->
+            <div class="space-y-3 md:hidden">
+              @for (p of myPairings(); track p.id) {
+                <div class="border rounded-lg p-4 shadow-sm">
+                  <div class="flex items-center justify-between text-xs text-muted-foreground mb-2">
+                    <span class="font-mono">#{{ p.gamenumber > 0 ? p.gamenumber : '-' }}</span>
+                    <span>{{ p.startTime | date:'HH:mm' }} · Court {{ p.court }}</span>
+                  </div>
+                  <div class="flex items-baseline justify-between gap-3">
+                    @let opp = getOpponent(p);
+                    @if (opp && opp.id && opp.id > 0) {
+                      <span class="font-bold text-primary break-words min-w-0">{{ opp.name }}</span>
+                    } @else {
+                      <span class="font-semibold text-muted-foreground italic">Offen</span>
+                    }
+                    <span class="font-black text-lg tabular-nums shrink-0">
+                      @if (p.points) {
+                        <span [class.text-green-600]="isWinner(p)" [class.text-red-600]="isLoser(p)">{{ getMyPoints(p) }}:{{ getOpponentPoints(p) }}</span>
+                      } @else {
+                        <span class="text-muted-foreground/40 font-normal">-:-</span>
+                      }
+                    </span>
+                  </div>
+                </div>
+              } @empty {
+                <div class="text-center py-12 text-muted-foreground italic">Noch keine Spiele für diesen Teilnehmer.</div>
+              }
+            </div>
+
+            <!-- Desktop: Tabelle -->
+            <div hlmTableContainer class="hidden md:block border rounded-lg overflow-hidden shadow-sm">
               <table hlmTable>
                 <thead hlmTHead>
                   <tr hlmTr>
@@ -82,7 +112,25 @@ import type { load } from './[id].server';
             @for (group of data()?.groups; track group.id) {
               <div class="space-y-4">
                 <h3 class="text-xl font-bold">Gruppe {{ group.id }} Ranking</h3>
-                <div hlmTableContainer class="border rounded-lg overflow-hidden shadow-sm">
+
+                <!-- Mobile: Karten-Liste -->
+                <div class="md:hidden border rounded-lg overflow-hidden shadow-sm divide-y">
+                  @for (comp of group.competitors; track comp.id; let i = $index) {
+                    <div class="flex items-center gap-3 p-3" [class.bg-primary/10]="comp.id === c.id">
+                      <span class="w-6 text-center font-bold shrink-0">{{ i + 1 }}</span>
+                      <span class="flex-1 min-w-0 font-medium break-words">
+                        {{ comp.name }} @if(comp.id === c.id){ <span class="text-xs text-muted-foreground">(Du)</span> }
+                      </span>
+                      <div class="flex gap-3 shrink-0 text-center leading-tight">
+                        <div class="w-9"><div class="font-bold text-sm">{{ comp.matchPoints }}</div><div class="text-[10px] uppercase text-muted-foreground">MP</div></div>
+                        <div class="w-10"><div class="text-sm font-mono">{{ comp.diff > 0 ? '+' : '' }}{{ comp.diff }}</div><div class="text-[10px] uppercase text-muted-foreground">Diff</div></div>
+                      </div>
+                    </div>
+                  }
+                </div>
+
+                <!-- Desktop: Tabelle -->
+                <div hlmTableContainer class="hidden md:block border rounded-lg overflow-hidden shadow-sm">
                   <table hlmTable>
                     <thead hlmTHead>
                       <tr hlmTr>
