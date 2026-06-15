@@ -309,7 +309,7 @@ export default class AdminPage {
       if (av == null) return 1;
       if (bv == null) return -1;
       const cmp =
-        typeof av === 'string' ? String(av).localeCompare(String(bv), 'de', { sensitivity: 'base' }) : av - bv;
+        typeof av === 'string' ? String(av).localeCompare(String(bv), 'de', { sensitivity: 'base' }) : Number(av) - Number(bv);
       return cmp * dir;
     });
   });

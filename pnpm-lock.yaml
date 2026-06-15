@@ -156,6 +156,9 @@ importers:
       eslint-config-prettier:
         specifier: ^10.1.8
         version: 10.1.8(eslint@10.5.0(jiti@2.7.0))
+      h3:
+        specifier: 1.15.11
+        version: 1.15.11
       jsdom:
         specifier: ^22.0.0
         version: 22.1.0
