@@ -10,6 +10,7 @@ import { HlmLabel } from '@spartan-ng/helm/label';
 import { injectLoad, defineRouteMeta } from '@analogjs/router';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { refereeGuard } from '../../../auth.guard';
+import { isGroups } from 'calc-tournament';
 import type { load } from './[id].server';
 
 export const routeMeta = defineRouteMeta({
@@ -56,7 +57,7 @@ export const routeMeta = defineRouteMeta({
               <span class="px-3 py-1.5 bg-primary/10 text-primary font-bold rounded-lg text-sm"
                 >Court {{ p.court }}</span
               >
-              @if (p.round > 0) {
+              @if (isGroups(p)) {
                 <span class="px-3 py-1.5 bg-muted text-muted-foreground font-semibold rounded-lg text-sm"
                   >Runde {{ p.round }}</span
                 >
@@ -159,6 +160,8 @@ export default class RefereeScoreEntryPage {
 
   // Where to return after saving/cancelling — '/results' if we came from there, else '/referee'.
   protected returnUrl = this.route.snapshot.queryParamMap.get('from') === 'results' ? '/results' : '/referee';
+
+  protected isGroups = isGroups;
 
   data = toSignal(injectLoad<typeof load>());
   pairing = computed(() => this.data()?.pairing ?? null);

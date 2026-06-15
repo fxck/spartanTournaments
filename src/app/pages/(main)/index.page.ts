@@ -3,7 +3,7 @@ import { injectLoad } from '@analogjs/router';
 import { CommonModule } from '@angular/common';
 import { toSignal } from '@angular/core/rxjs-interop';
 import type { load } from './index.server';
-import { getPhaseName } from '../../shared/phase-name';
+import { phaseLabel } from '../../shared/phase-name';
 import { injectLivePairings } from '../../shared/live-pairings';
 
 type LoadData = Awaited<ReturnType<typeof load>>;
@@ -65,7 +65,7 @@ type GamePoint = LoadData['gamepoints'][number];
           <span class="flex items-center gap-2 min-w-0">
             <span class="text-sm font-bold text-primary leading-none truncate">Court {{ pairing.court }}</span>
             <span class="px-2 py-0.5 rounded font-bold text-xs shrink-0 bg-secondary text-secondary-foreground">
-              {{ pairing.groupID > 0 ? 'Gruppe ' + pairing.groupID : getPhaseName(pairing.round) }}
+              {{ phaseLabel(pairing) }}
             </span>
           </span>
           <span class="flex items-center gap-1.5 shrink-0 text-muted-foreground">
@@ -164,5 +164,5 @@ export default class HomeComponent {
     return this.activePairings().filter((p) => new Date(p.startTime).getTime() > now);
   });
 
-  protected getPhaseName = getPhaseName;
+  protected phaseLabel = phaseLabel;
 }

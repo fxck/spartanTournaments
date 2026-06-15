@@ -6,6 +6,7 @@ import {
   CalcMostGamesPerCompetitorPlan,
   calcFinals,
   calcNextFinalRound,
+  isFinals,
   type CalcCompetitor,
   type CalcTournamentDetails,
 } from 'calc-tournament';
@@ -86,7 +87,7 @@ export class TournamentEngine {
         details.minutesPerGame,
       );
 
-      const finalsPairingIds = allPairings.filter((p) => p.groupID < 0).map((p) => p.id);
+      const finalsPairingIds = allPairings.filter(isFinals).map((p) => p.id);
       if (finalsPairingIds.length > 0) {
         await tx.delete(gamePoints).where(inArray(gamePoints.pairingID, finalsPairingIds));
       }
@@ -110,7 +111,7 @@ export class TournamentEngine {
 
   static async advanceFinalsRound(): Promise<void> {
     await db.transaction(async (tx) => {
-      const finalsPairings = (await tx.select().from(pairings)).filter((p) => p.groupID < 0);
+      const finalsPairings = (await tx.select().from(pairings)).filter(isFinals);
       const allGamePoints = await tx.select().from(gamePoints);
       const [details] = await tx.query.tournamentDetails.findMany({ limit: 1 });
       if (!details) throw new Error('No tournament details found');

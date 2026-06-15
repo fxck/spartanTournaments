@@ -6,7 +6,8 @@ import { HlmButton } from '@spartan-ng/helm/button';
 import { injectLoad } from '@analogjs/router';
 import { toSignal } from '@angular/core/rxjs-interop';
 import type { load } from './results.server';
-import { getPhaseName } from '../../shared/phase-name';
+import { phaseLabel } from '../../shared/phase-name';
+import { isFinals } from 'calc-tournament';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -103,7 +104,7 @@ import { getPhaseName } from '../../shared/phase-name';
                 }}</span>
               </div>
               <span class="absolute bottom-1 right-2 font-mono text-[10px] text-muted-foreground/40">{{
-                p.round < 0 ? getPhaseName(p.round) : '#' + (p.gamenumber > 0 ? p.gamenumber : '-')
+                isFinals(p) ? phaseLabel(p) : '#' + (p.gamenumber > 0 ? p.gamenumber : '-')
               }}</span>
             </div>
           </div>
@@ -125,8 +126,8 @@ import { getPhaseName } from '../../shared/phase-name';
           <tbody hlmTBody>
             @for (p of results(); track p.id) {
               <tr hlmTr [id]="p.id === firstOpenId() ? 'first-open-d' : null">
-                <td hlmTd class="w-16 text-muted-foreground" [class.font-mono]="p.round >= 0">
-                  {{ p.round < 0 ? getPhaseName(p.round) : p.gamenumber > 0 ? p.gamenumber : '-' }}
+                <td hlmTd class="w-16 text-muted-foreground" [class.font-mono]="!isFinals(p)">
+                  {{ isFinals(p) ? phaseLabel(p) : p.gamenumber > 0 ? p.gamenumber : '-' }}
                 </td>
                 <td hlmTd>
                   <div class="flex items-center gap-4">
@@ -202,7 +203,8 @@ import { getPhaseName } from '../../shared/phase-name';
   `,
 })
 export default class ResultsPage {
-  protected getPhaseName = getPhaseName;
+  protected phaseLabel = phaseLabel;
+  protected isFinals = isFinals;
   data = toSignal(injectLoad<typeof load>());
 
   pairings = computed(() => this.data()?.pairings ?? []);

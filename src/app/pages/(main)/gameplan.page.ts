@@ -5,7 +5,8 @@ import { HlmTableImports } from '@spartan-ng/helm/table';
 import { injectLoad } from '@analogjs/router';
 import { toSignal } from '@angular/core/rxjs-interop';
 import type { load } from './gameplan.server';
-import { getPhaseName } from '../../shared/phase-name';
+import { phaseLabel } from '../../shared/phase-name';
+import { isFinals, isGroups } from 'calc-tournament';
 import { injectLivePairings } from '../../shared/live-pairings';
 
 type PairingRow = Awaited<ReturnType<typeof load>>[number];
@@ -24,18 +25,18 @@ type PairingRow = Awaited<ReturnType<typeof load>>[number];
       <!-- Mobile: Karten-Ansicht (Namen untereinander, brechen sauber um) -->
       <div class="space-y-3 md:hidden">
         @for (p of pairings(); track p.id) {
-          <div class="border rounded-xl shadow-sm overflow-hidden" [class]="p.groupID < 0 ? 'bg-primary/5' : 'bg-card'">
+          <div class="border rounded-xl shadow-sm overflow-hidden" [class]="isFinals(p) ? 'bg-primary/5' : 'bg-card'">
             <!-- Header band: phase/group, court, time -->
             <div class="flex items-center justify-between gap-2 border-b bg-muted/30 px-4 py-2.5">
               <span class="flex items-center gap-2 min-w-0">
                 <span class="text-sm font-bold text-primary leading-none truncate">Court {{ p.court }}</span>
                 <span
                   class="px-2 py-0.5 rounded font-bold text-xs shrink-0"
-                  [class.bg-secondary]="p.groupID > 0"
-                  [class.bg-primary]="p.groupID < 0"
-                  [class.text-primary-foreground]="p.groupID < 0"
+                  [class.bg-secondary]="isGroups(p)"
+                  [class.bg-primary]="isFinals(p)"
+                  [class.text-primary-foreground]="isFinals(p)"
                 >
-                  {{ p.groupID > 0 ? 'Gruppe ' + p.groupID : getPhaseName(p.round) }}
+                  {{ phaseLabel(p) }}
                 </span>
               </span>
               <span class="flex items-center gap-1.5 shrink-0">
@@ -104,16 +105,16 @@ type PairingRow = Awaited<ReturnType<typeof load>>[number];
           </thead>
           <tbody hlmTBody>
             @for (p of pairings(); track p.id) {
-              <tr hlmTr [class]="p.groupID < 0 ? 'bg-primary/5' : ''">
+              <tr hlmTr [class]="isFinals(p) ? 'bg-primary/5' : ''">
                 <td hlmTd class="w-16 text-muted-foreground font-mono">{{ p.gamenumber > 0 ? p.gamenumber : '-' }}</td>
                 <td hlmTd class="w-32 text-center">
                   <span
                     class="px-2 py-1 rounded text-xs font-bold"
-                    [class.bg-secondary]="p.groupID > 0"
-                    [class.bg-primary]="p.groupID < 0"
-                    [class.text-primary-foreground]="p.groupID < 0"
+                    [class.bg-secondary]="isGroups(p)"
+                    [class.bg-primary]="isFinals(p)"
+                    [class.text-primary-foreground]="isFinals(p)"
                   >
-                    {{ p.groupID > 0 ? 'Gruppe ' + p.groupID : getPhaseName(p.round) }}
+                    {{ phaseLabel(p) }}
                   </span>
                 </td>
                 <td hlmTd class="w-32 font-medium">{{ p.startTime | date: 'HH:mm' }} Uhr</td>
@@ -162,5 +163,7 @@ export default class GameplanPage {
 
   pairings = injectLivePairings<PairingRow[]>('/api/pairings', this.ssrData);
 
-  protected getPhaseName = getPhaseName;
+  protected phaseLabel = phaseLabel;
+  protected isFinals = isFinals;
+  protected isGroups = isGroups;
 }

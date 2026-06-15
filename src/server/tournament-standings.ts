@@ -1,7 +1,7 @@
 import { db, type DbOrTx } from './db';
 import { competitors, pairings, gamePoints } from './db/schema';
 import { toCalcCompetitor } from './db/calc-mappers';
-import { calcAllMatchPoints, type CalcCompetitor, type CalcGroup } from 'calc-tournament';
+import { calcAllMatchPoints, isGroups, type CalcCompetitor, type CalcGroup } from 'calc-tournament';
 
 type GamePointRow = typeof gamePoints.$inferSelect;
 
@@ -20,8 +20,8 @@ export class TournamentStandings {
     const calcComps: CalcCompetitor[] = allComps.map(toCalcCompetitor);
 
     // Group standings count only group-phase results; finals Pairings
-    // (groupID < 0) must not pollute the group ranking.
-    const groupPairings = allPairings.filter((p) => p.groupID > 0);
+    // must not pollute the group ranking.
+    const groupPairings = allPairings.filter(isGroups);
     calcAllMatchPoints(calcComps, allGps, groupPairings);
 
     let filteredGroupId = 0;

@@ -5,6 +5,7 @@ import { MatchRegistry } from '../../../match-registry';
 import { TournamentEngine } from '../../../tournament-engine';
 import { db } from '../../../db';
 import { pairings } from '../../../db/schema';
+import { isFinals } from 'calc-tournament';
 
 export default defineEventHandler(async (event) => {
   await requireReferee(event);
@@ -20,7 +21,7 @@ export default defineEventHandler(async (event) => {
   // idempotent (it updates existing next-round pairings instead of duplicating),
   // so re-running it on every finals result is safe.
   const [pairing] = await db.select().from(pairings).where(eq(pairings.id, pairingID));
-  if (pairing && pairing.groupID < 0) {
+  if (pairing && isFinals(pairing)) {
     await TournamentEngine.advanceFinalsRound();
   }
 

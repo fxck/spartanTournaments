@@ -6,13 +6,20 @@ A participant in a tournament. Deliberately generic — can be an individual pla
 ## Pairing
 A scheduled match between two Competitors on a specific court at a specific time. Belongs to a round and a group. A Pairing has a `gamenumber` (sequential display number) and a `groupID` that encodes which phase it belongs to (see GroupID convention below).
 
-## GroupID convention
-- `groupID > 0` → Groups phase pairing, belonging to that group number
-- `groupID < 0` → Finals phase pairing; the negative value encodes the round:
+## GroupID / round convention
+A Pairing's **Phase** is encoded across two fields — do not read either field's sign directly; go through the `describePhase` / `isFinals` / `isGroups` seam in `calc-tournament`.
+
+- `groupID > 0` → Groups phase Pairing; the value **is** the group number.
+- `groupID < 0` → Finals phase Pairing. Here the magnitude is a **bracket-slot index** (`-1, -2, -3, …`, set as `-i/2-1`), NOT the round. `calcNextGroupID` walks slots up the bracket tree.
+- `round` carries the **finals stage** (only meaningful when `groupID < 0`):
   - `-1` = Final
   - `-2` = Semifinal
   - `-4` = Quarterfinal
   - `-8` = Octofinal
+  - any other negative value → unknown KO round (`stage: 'ko'`)
+
+## Phase
+The groups-vs-finals classification of a Pairing, plus — for finals — its **stage** (`final | semifinal | quarterfinal | octofinal | ko`) and **slot** (bracket position). Derived by `describePhase(pairing)` in `calc-tournament`, which owns the GroupID/round convention. The German wording (`Gruppe N`, `Finale`, `Viertelfinale`, …) lives in the app (`phaseLabel`), not in the calc library — the library stays presentation-free.
 
 ## GamePoint
 The raw score result of a Pairing: `competitor1Points` and `competitor2Points`. One GamePoint per Pairing (upserted). From a GamePoint, MatchPoints are derived (win/loss/draw).
