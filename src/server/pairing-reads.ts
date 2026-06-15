@@ -1,4 +1,4 @@
-import { eq, or, and, between, gt, isNull } from 'drizzle-orm';
+import { eq, or, and, between, gt, isNull, type SQL } from 'drizzle-orm';
 import { alias } from 'drizzle-orm/pg-core';
 import { sub, add } from 'date-fns';
 import { db, pairings, competitors, gamePoints, type DbOrTx } from './db';
@@ -42,7 +42,7 @@ export class PairingReads {
     const c1 = alias(competitors, 'c1');
     const c2 = alias(competitors, 'c2');
 
-    const conditions: any[] = [];
+    const conditions: (SQL | undefined)[] = [];
     if (filter.competitorId != null) {
       conditions.push(
         or(eq(pairings.competitor1ID, filter.competitorId), eq(pairings.competitor2ID, filter.competitorId)),
@@ -58,7 +58,7 @@ export class PairingReads {
       conditions.push(gt(pairings.competitor1ID, 0), gt(pairings.competitor2ID, 0));
     }
 
-    let query: any = tx
+    let query = tx
       .select({
         id: pairings.id,
         gamenumber: pairings.gamenumber,
@@ -73,7 +73,8 @@ export class PairingReads {
       })
       .from(pairings)
       .leftJoin(c1, eq(pairings.competitor1ID, c1.id))
-      .leftJoin(c2, eq(pairings.competitor2ID, c2.id));
+      .leftJoin(c2, eq(pairings.competitor2ID, c2.id))
+      .$dynamic();
 
     // "Unplayed" = no GamePoint references this Pairing. The left join + IS NULL
     // keeps only Pairings with zero results, without multiplying played rows.

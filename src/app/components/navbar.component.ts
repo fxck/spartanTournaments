@@ -98,6 +98,8 @@ import { firstValueFrom } from 'rxjs';
 
         <!-- Mobile dropdown -->
         @if (mobileOpen()) {
+          <!-- Wrapper closes the menu when a focusable child link/button is activated (mouse or keyboard). -->
+          <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -->
           <div class="md:hidden border-t py-4 space-y-1" (click)="mobileOpen.set(false)">
             <a
               routerLink="/"

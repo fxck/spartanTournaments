@@ -69,11 +69,16 @@ export const routeMeta = defineRouteMeta({
             <div class="grid grid-cols-2 gap-8 md:gap-12 relative">
               <!-- Competitor 1 -->
               <div class="space-y-4 text-center">
-                <label hlmLabel class="text-lg font-semibold block truncate" title="{{ p.competitor1?.name }}">{{
-                  p.competitor1?.name
-                }}</label>
+                <label
+                  hlmLabel
+                  for="competitor1Points"
+                  class="text-lg font-semibold block truncate"
+                  title="{{ p.competitor1?.name }}"
+                  >{{ p.competitor1?.name }}</label
+                >
                 <input
                   hlmInput
+                  id="competitor1Points"
                   type="number"
                   (focus)="selectText($event)"
                   formControlName="competitor1Points"
@@ -90,11 +95,16 @@ export const routeMeta = defineRouteMeta({
 
               <!-- Competitor 2 -->
               <div class="space-y-4 text-center">
-                <label hlmLabel class="text-lg font-semibold block truncate" title="{{ p.competitor2?.name }}">{{
-                  p.competitor2?.name
-                }}</label>
+                <label
+                  hlmLabel
+                  for="competitor2Points"
+                  class="text-lg font-semibold block truncate"
+                  title="{{ p.competitor2?.name }}"
+                  >{{ p.competitor2?.name }}</label
+                >
                 <input
                   hlmInput
+                  id="competitor2Points"
                   type="number"
                   (focus)="selectText($event)"
                   formControlName="competitor2Points"
@@ -176,7 +186,7 @@ export default class RefereeScoreEntryPage {
         pairingID: p.id,
       };
 
-      await firstValueFrom(this.http.post<any>('/api/gamepoints', payload));
+      await firstValueFrom(this.http.post('/api/gamepoints', payload));
 
       // Navigate back to overview upon success
       this.router.navigate(['/referee']);

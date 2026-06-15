@@ -7,9 +7,9 @@ import { competitors, pairings, gamePoints } from './db/schema';
 
 // Stub db.select().from(table) to resolve canned rows per table, independent of
 // the Promise.all ordering inside getGroupsStandings.
-function mockStandingsDb(data: { comps: any[]; pairings: any[]; gps: any[] }) {
+function mockStandingsDb(data: { comps: unknown[]; pairings: unknown[]; gps: unknown[] }) {
   db.select = vi.fn().mockImplementation(() => ({
-    from: vi.fn().mockImplementation((tbl: any) => {
+    from: vi.fn().mockImplementation((tbl: unknown) => {
       if (tbl === competitors) return Promise.resolve(data.comps);
       if (tbl === pairings) return Promise.resolve(data.pairings);
       if (tbl === gamePoints) return Promise.resolve(data.gps);
@@ -20,7 +20,7 @@ function mockStandingsDb(data: { comps: any[]; pairings: any[]; gps: any[] }) {
 
 // Mock DB
 vi.mock('./db', () => {
-  const mockDb: any = {
+  const mockDb: Record<string, unknown> = {
     select: vi.fn().mockReturnThis(),
     from: vi.fn().mockReturnThis(),
     where: vi.fn().mockReturnThis(),
@@ -157,15 +157,17 @@ describe('TournamentStandings', () => {
       { id: 1, name: 'Alice', drawNumber: 1, groupID: 1, createdAt: new Date() },
       { id: 2, name: 'Bob', drawNumber: 2, groupID: 1, createdAt: new Date() },
     ];
-    const fromSpy = vi.fn((tbl: any) => {
+    const fromSpy = vi.fn((tbl: unknown) => {
       if (tbl === competitors) return Promise.resolve(comps);
       if (tbl === pairings)
         return Promise.resolve([{ id: 10, competitor1ID: 1, competitor2ID: 2, round: 1, groupID: 1 }]);
       return Promise.resolve([]);
     });
-    db.select = vi.fn(() => ({ from: fromSpy })) as any;
+    db.select = vi.fn(() => ({ from: fromSpy })) as unknown as typeof db.select;
 
-    const preloaded = [{ id: 100, pairingID: 10, competitor1Points: 5, competitor2Points: 3 }] as any;
+    const preloaded = [
+      { id: 100, pairingID: 10, competitor1Points: 5, competitor2Points: 3 },
+    ] as unknown as Parameters<typeof TournamentStandings.getGroupsStandings>[2];
     const standings = await TournamentStandings.getGroupsStandings(db, 0, preloaded);
 
     const alice = standings[0].competitors.find((c) => c.id === 1);

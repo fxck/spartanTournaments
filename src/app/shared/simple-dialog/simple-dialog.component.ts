@@ -17,6 +17,8 @@ import { SimpleDialogButton, SimpleDialogService } from './simple-dialog.service
         tabindex="-1"
       >
         @if (outsideClickElement()) {
+          <!-- Presentational backdrop: keyboard users close via the Escape handler on the content above. -->
+          <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -->
           <div class="fixed top-0 left-0 -z-10 h-dvh w-screen overflow-hidden" (click)="onOutsideClick()"></div>
         }
         @if (cancelButton()) {

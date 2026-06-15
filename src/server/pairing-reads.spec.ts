@@ -14,17 +14,20 @@ vi.mock('./db', async () => {
 });
 
 import { PairingReads } from './pairing-reads';
+import type { DbOrTx } from './db';
 
 // A chainable recorder standing in for the drizzle query builder. select →
-// from → leftJoin* → where → orderBy, where orderBy resolves to canned rows.
-function makeTx(rows: any[] = []) {
+// from → leftJoin* → $dynamic → where → orderBy, where orderBy resolves to
+// canned rows.
+function makeTx(rows: unknown[] = []) {
   const calls = { leftJoin: 0, where: [] as unknown[], orderBy: [] as unknown[][] };
-  const builder: any = {
+  const builder: Record<string, unknown> = {
     from: vi.fn(() => builder),
     leftJoin: vi.fn(() => {
       calls.leftJoin++;
       return builder;
     }),
+    $dynamic: vi.fn(() => builder),
     where: vi.fn((c: unknown) => {
       calls.where.push(c);
       return builder;
@@ -34,11 +37,11 @@ function makeTx(rows: any[] = []) {
       return Promise.resolve(rows);
     }),
   };
-  const tx: any = {
+  const tx = {
     select: vi.fn(() => builder),
     query: { tournamentDetails: { findMany: vi.fn() } },
   };
-  return { tx, calls };
+  return { tx: tx as unknown as DbOrTx & { query: { tournamentDetails: { findMany: ReturnType<typeof vi.fn> } } }, calls };
 }
 
 describe('PairingReads.findPairings', () => {

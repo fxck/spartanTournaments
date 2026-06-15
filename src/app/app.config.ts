@@ -10,12 +10,16 @@ const cookieInterceptor: HttpInterceptorFn = (req, next) => {
   const isServer = isPlatformServer(platformId);
 
   if (isServer) {
-    const request: any = inject(REQUEST, { optional: true });
+    const request = inject(REQUEST, { optional: true }) as
+      | { headers?: Headers | Record<string, string | undefined> }
+      | null;
     // In H3/Analog, the request object headers can be accessed differently.
     // Try both standard Request API and raw object mapping.
-    const cookies = request?.headers?.get
-      ? request.headers.get('cookie')
-      : request?.headers?.['cookie'] || request?.headers?.cookie;
+    const headers = request?.headers;
+    const cookies =
+      headers instanceof Headers
+        ? headers.get('cookie')
+        : headers?.['cookie'] || headers?.['Cookie'];
 
     if (cookies) {
       req = req.clone({

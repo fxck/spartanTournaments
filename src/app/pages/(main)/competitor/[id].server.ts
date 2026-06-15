@@ -4,7 +4,7 @@ import { db, gamePoints, competitors } from '../../../../server/db';
 import { PairingReads } from '../../../../server/pairing-reads';
 import { TournamentStandings } from '../../../../server/tournament-standings';
 
-export const load = async ({ event, params }: PageServerLoad) => {
+export const load = async ({ params }: PageServerLoad) => {
   const id = Number(params?.['id']);
   if (!id) return { competitor: null, pairings: [], gamepoints: [], groups: [] };
 

@@ -108,5 +108,5 @@ import type { load } from './groups.server';
 })
 export default class GroupsPage {
   data = toSignal(injectLoad<typeof load>(), { initialValue: [] });
-  groupList = computed(() => (this.data() ?? []) as any[]);
+  groupList = computed(() => this.data() ?? []);
 }

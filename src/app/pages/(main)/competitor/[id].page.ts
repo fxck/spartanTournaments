@@ -1,10 +1,15 @@
-import { Component, inject, computed, signal, effect, ChangeDetectionStrategy } from '@angular/core';
+import { Component, computed, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HlmTableImports } from '@spartan-ng/helm/table';
 import { HlmTabsImports } from '@spartan-ng/helm/tabs';
 import { injectLoad } from '@analogjs/router';
 import { toSignal } from '@angular/core/rxjs-interop';
 import type { load } from './[id].server';
+
+type LoadResult = Awaited<ReturnType<typeof load>>;
+type EnrichedPairing = LoadResult['pairings'][number] & {
+  points: LoadResult['gamepoints'][number] | undefined;
+};
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -203,38 +208,38 @@ export default class CompetitorDetailPage {
     const gps = d.gamepoints ?? [];
     const pairings = d.pairings ?? [];
     return pairings
-      .filter((p: any) => p.competitor1.id === c.id || p.competitor2.id === c.id)
-      .map((p: any) => ({
+      .filter((p) => p.competitor1?.id === c.id || p.competitor2?.id === c.id)
+      .map((p) => ({
         ...p,
-        points: gps.find((g: any) => g.pairingID === p.id),
+        points: gps.find((g) => g.pairingID === p.id),
       }));
   });
 
-  getOpponent(p: any) {
+  getOpponent(p: EnrichedPairing) {
     const c = this.data()?.competitor;
-    return p.competitor1.id === c?.id ? p.competitor2 : p.competitor1;
+    return p.competitor1?.id === c?.id ? p.competitor2 : p.competitor1;
   }
 
-  getMyPoints(p: any) {
-    const c = this.data()?.competitor;
-    const pnts = p.points;
-    if (!pnts) return 0;
-    return p.competitor1.id === c?.id ? pnts.competitor1Points : pnts.competitor2Points;
-  }
-
-  getOpponentPoints(p: any) {
+  getMyPoints(p: EnrichedPairing) {
     const c = this.data()?.competitor;
     const pnts = p.points;
     if (!pnts) return 0;
-    return p.competitor1.id === c?.id ? pnts.competitor2Points : pnts.competitor1Points;
+    return p.competitor1?.id === c?.id ? pnts.competitor1Points : pnts.competitor2Points;
   }
 
-  isWinner(p: any) {
+  getOpponentPoints(p: EnrichedPairing) {
+    const c = this.data()?.competitor;
+    const pnts = p.points;
+    if (!pnts) return 0;
+    return p.competitor1?.id === c?.id ? pnts.competitor2Points : pnts.competitor1Points;
+  }
+
+  isWinner(p: EnrichedPairing) {
     if (!p.points) return false;
     return this.getMyPoints(p) > this.getOpponentPoints(p);
   }
 
-  isLoser(p: any) {
+  isLoser(p: EnrichedPairing) {
     if (!p.points) return false;
     return this.getMyPoints(p) < this.getOpponentPoints(p);
   }

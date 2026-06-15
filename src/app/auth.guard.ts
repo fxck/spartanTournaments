@@ -3,7 +3,6 @@ import { Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 import { isPlatformServer } from '@angular/common';
-import { REQUEST } from '@analogjs/router/tokens';
 
 export const adminGuard = async () => {
   const http = inject(HttpClient);
@@ -18,8 +17,9 @@ export const adminGuard = async () => {
     }
     console.log(`[GUARD] Admin access denied. Role: ${res.role} (Server: ${isServer})`);
     return router.parseUrl('/login');
-  } catch (err: any) {
-    console.error(`[GUARD] Admin check failed: ${err.message} (Server: ${isServer})`);
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    console.error(`[GUARD] Admin check failed: ${message} (Server: ${isServer})`);
     return router.parseUrl('/login');
   }
 };

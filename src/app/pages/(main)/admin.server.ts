@@ -1,7 +1,6 @@
-import { PageServerLoad } from '@analogjs/router';
 import { db, competitors } from '../../../server/db';
 
-export const load = async ({ event }: PageServerLoad) => {
+export const load = async () => {
   const [tournament, allCompetitors] = await Promise.all([
     db.query.tournamentDetails.findFirst(),
     db.select().from(competitors).orderBy(competitors.name),

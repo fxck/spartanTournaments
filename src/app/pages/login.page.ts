@@ -66,7 +66,7 @@ export default class LoginPage {
       } else {
         this.router.navigate(['/']);
       }
-    } catch (err: any) {
+    } catch (err) {
       console.error('Login failed', err);
       this.error.set('Ungültiges Passwort oder Serverfehler.');
     } finally {

@@ -8,7 +8,7 @@ export const setupGuard = async () => {
   const router = inject(Router);
 
   try {
-    const res = await firstValueFrom(http.get<any>('/api/tournament'));
+    const res = await firstValueFrom(http.get<{ tournament?: unknown }>('/api/tournament'));
     const tournament = res?.tournament;
     if (!tournament && router.url !== '/setup') {
       return router.parseUrl('/setup');

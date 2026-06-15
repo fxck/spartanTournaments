@@ -21,12 +21,12 @@ export class TournamentStandings {
 
     // Group standings count only group-phase results; finals Pairings
     // (groupID < 0) must not pollute the group ranking.
-    const groupPairings = allPairings.filter((p: any) => p.groupID > 0);
+    const groupPairings = allPairings.filter((p) => p.groupID > 0);
     calcAllMatchPoints(calcComps, allGps, groupPairings);
 
     let filteredGroupId = 0;
     if (competitorFilter > 0) {
-      filteredGroupId = allComps.find((c: any) => c.id === competitorFilter)?.groupID ?? 0;
+      filteredGroupId = allComps.find((c) => c.id === competitorFilter)?.groupID ?? 0;
     }
 
     const groupMap = new Map<number, CalcCompetitor[]>();

@@ -181,9 +181,9 @@ export default class ResultsPage {
   results = computed(() => {
     const pairings = this.pairings();
     const gps = this.gamepoints();
-    return pairings.map((p: any) => ({
+    return pairings.map((p) => ({
       ...p,
-      points: gps.find((g: any) => g.pairingID === p.id),
+      points: gps.find((g) => g.pairingID === p.id),
     }));
   });
 }

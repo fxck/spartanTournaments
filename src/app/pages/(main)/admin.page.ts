@@ -1,5 +1,5 @@
 import {
-  Component as NgComponent,
+  Component ,
   inject as ngInject,
   signal,
   effect,
@@ -8,7 +8,7 @@ import {
   ChangeDetectionStrategy,
 } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, FormsModule, Validators } from '@angular/forms';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { injectLoad, defineRouteMeta } from '@analogjs/router';
 import { adminGuard } from '../../auth.guard';
 import { CommonModule } from '@angular/common';
@@ -27,7 +27,14 @@ export const routeMeta = defineRouteMeta({
   canActivate: [adminGuard],
 });
 
-@NgComponent({
+interface Competitor {
+  id: number;
+  name: string;
+  drawNumber: number | null;
+  groupID: number | null;
+}
+
+@Component({
   selector: 'app-admin',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
@@ -284,7 +291,7 @@ export default class AdminPage {
   loading = signal(false);
 
   competitorsResource = resource({
-    loader: () => firstValueFrom(this.http.get<any[]>('/api/competitors')),
+    loader: () => firstValueFrom(this.http.get<Competitor[]>('/api/competitors')),
   });
 
   sortColumn = signal<'id' | 'name' | 'drawNumber'>('id');
@@ -392,13 +399,14 @@ export default class AdminPage {
     if (!name) return;
     this.loading.set(true);
     try {
-      await firstValueFrom(this.http.post<any>('/api/competitors', { name }));
+      await firstValueFrom(this.http.post('/api/competitors', { name }));
       this.competitorsResource.reload();
-    } catch (err: any) {
+    } catch (err) {
       console.error('Add failed', err);
+      const e = err as HttpErrorResponse;
       await this.dialogService.alert(
         'Fehler',
-        err?.error?.statusMessage ?? err?.error?.message ?? 'Teilnehmer konnte nicht hinzugefügt werden.',
+        e?.error?.statusMessage ?? e?.error?.message ?? 'Teilnehmer konnte nicht hinzugefügt werden.',
         'error',
       );
     } finally {
@@ -420,7 +428,7 @@ export default class AdminPage {
     this.loading.set(true);
     try {
       const { created, skipped } = await firstValueFrom(
-        this.http.post<{ created: any[]; skipped: string[] }>('/api/competitors', { names }),
+        this.http.post<{ created: Competitor[]; skipped: string[] }>('/api/competitors', { names }),
       );
       this.competitorsResource.reload();
       this.bulkOpen.set(false);
@@ -467,11 +475,12 @@ export default class AdminPage {
       );
       this.editingId.set(null);
       this.competitorsResource.reload();
-    } catch (err: any) {
+    } catch (err) {
       console.error('Update failed', err);
+      const e = err as HttpErrorResponse;
       await this.dialogService.alert(
         'Fehler',
-        err?.error?.statusMessage ?? err?.error?.message ?? 'Teilnehmer konnte nicht gespeichert werden.',
+        e?.error?.statusMessage ?? e?.error?.message ?? 'Teilnehmer konnte nicht gespeichert werden.',
         'error',
       );
     } finally {
