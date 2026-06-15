@@ -10,4 +10,3 @@ export default defineEventHandler(async (event) => {
 export async function getGroups(competitorFilter: number): Promise<CalcGroup[]> {
   return TournamentStandings.getGroupsStandings(undefined, competitorFilter);
 }
-

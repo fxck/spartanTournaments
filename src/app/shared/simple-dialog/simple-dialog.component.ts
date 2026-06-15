@@ -14,17 +14,17 @@ import { SimpleDialogButton, SimpleDialogService } from './simple-dialog.service
         *hlmAlertDialogPortal="let ctx"
         [class]="computedClass()"
         (keydown)="onKeyDown($event)"
-        tabindex="-1">
+        tabindex="-1"
+      >
         @if (outsideClickElement()) {
-          <div
-            class="fixed top-0 left-0 -z-10 h-dvh w-screen overflow-hidden"
-            (click)="onOutsideClick()"></div>
+          <div class="fixed top-0 left-0 -z-10 h-dvh w-screen overflow-hidden" (click)="onOutsideClick()"></div>
         }
         @if (cancelButton()) {
           <button
             class="absolute top-3 right-3 cursor-pointer opacity-80 transition-opacity hover:opacity-100 p-1 rounded-sm hover:bg-muted text-lg border-0 bg-transparent font-semibold"
             (click)="onOutsideClick()"
-            aria-label="Schließen">
+            aria-label="Schließen"
+          >
             <span class="sr-only">Schließen</span>
             ×
           </button>
@@ -32,28 +32,28 @@ import { SimpleDialogButton, SimpleDialogService } from './simple-dialog.service
         @if (title() || description()) {
           <hlm-alert-dialog-header class="space-y-2">
             @if (title()) {
-              <h3
-                class="px-1 text-lg font-semibold"
-                hlmAlertDialogTitle>
+              <h3 class="px-1 text-lg font-semibold" hlmAlertDialogTitle>
                 {{ title() }}
               </h3>
             }
             @if (description()) {
-              <p
-                class="px-1 whitespace-pre-wrap text-sm text-muted-foreground"
-                hlmAlertDialogDescription
-              >{{ description() }}</p>
+              <p class="px-1 whitespace-pre-wrap text-sm text-muted-foreground" hlmAlertDialogDescription>
+                {{ description() }}
+              </p>
             }
           </hlm-alert-dialog-header>
         }
-        <hlm-alert-dialog-footer class="p-1 flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2 gap-2 sm:gap-0 mt-4">
+        <hlm-alert-dialog-footer
+          class="p-1 flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2 gap-2 sm:gap-0 mt-4"
+        >
           @if (cancelButton()) {
             @let cancel = cancelButton()!;
             <button
               [disabled]="cancel.disabled?.() || false"
               [variant]="cancel.variant ?? 'outline'"
               (click)="onAction(cancel)"
-              hlmBtn>
+              hlmBtn
+            >
               {{ cancel.label ?? 'Abbrechen' }}
             </button>
           }
@@ -62,7 +62,8 @@ import { SimpleDialogButton, SimpleDialogService } from './simple-dialog.service
               [disabled]="button.disabled?.() || false"
               [variant]="button.variant ?? 'default'"
               (click)="onAction(button)"
-              hlmBtn>
+              hlmBtn
+            >
               {{ button.label ?? '' }}
             </button>
           }
@@ -72,7 +73,8 @@ import { SimpleDialogButton, SimpleDialogService } from './simple-dialog.service
               [disabled]="main.disabled?.() || false"
               [variant]="main.variant ?? 'default'"
               (click)="onAction(main)"
-              hlmBtn>
+              hlmBtn
+            >
               {{ main.label ?? 'OK' }}
             </button>
           }

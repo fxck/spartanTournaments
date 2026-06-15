@@ -52,12 +52,8 @@ describe('TournamentStandings', () => {
       { id: 1, name: 'Alice', drawNumber: 1, groupID: 1, createdAt: new Date() },
       { id: 2, name: 'Bob', drawNumber: 2, groupID: 1, createdAt: new Date() },
     ];
-    const mockPairings = [
-      { id: 10, competitor1ID: 1, competitor2ID: 2, round: 1, groupID: 1 },
-    ];
-    const mockGps = [
-      { id: 100, pairingID: 10, competitor1Points: 5, competitor2Points: 3 },
-    ];
+    const mockPairings = [{ id: 10, competitor1ID: 1, competitor2ID: 2, round: 1, groupID: 1 }];
+    const mockGps = [{ id: 100, pairingID: 10, competitor1Points: 5, competitor2Points: 3 }];
 
     let callCount = 0;
     db.select = vi.fn().mockImplementation(() => {
@@ -142,7 +138,7 @@ describe('TournamentStandings', () => {
     expect(standings.map((g) => g.id)).toEqual([1, 2]);
   });
 
-  it('with a competitor filter, returns only that competitor\'s group', async () => {
+  it("with a competitor filter, returns only that competitor's group", async () => {
     mockStandingsDb({
       comps: [
         { id: 1, name: 'A', drawNumber: 1, groupID: 1, createdAt: new Date() },
@@ -163,7 +159,8 @@ describe('TournamentStandings', () => {
     ];
     const fromSpy = vi.fn((tbl: any) => {
       if (tbl === competitors) return Promise.resolve(comps);
-      if (tbl === pairings) return Promise.resolve([{ id: 10, competitor1ID: 1, competitor2ID: 2, round: 1, groupID: 1 }]);
+      if (tbl === pairings)
+        return Promise.resolve([{ id: 10, competitor1ID: 1, competitor2ID: 2, round: 1, groupID: 1 }]);
       return Promise.resolve([]);
     });
     db.select = vi.fn(() => ({ from: fromSpy })) as any;

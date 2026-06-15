@@ -3,7 +3,13 @@ import { calcNextFinalRound } from './calc-next-final-round';
 import { CalcPairing, CalcGamePoint } from '../models/models';
 
 describe('calcNextFinalRound', () => {
-  const mockPairing = (id: number, competitor1ID: number, competitor2ID: number, round: number, groupID: number): CalcPairing => ({
+  const mockPairing = (
+    id: number,
+    competitor1ID: number,
+    competitor2ID: number,
+    round: number,
+    groupID: number,
+  ): CalcPairing => ({
     id,
     gamenumber: id,
     competitor1ID,
@@ -37,7 +43,7 @@ describe('calcNextFinalRound', () => {
     // SF2 (groupID = -2): Comp 30 vs Comp 40
     const sf1 = mockPairing(1, 10, 20, -2, -1);
     const sf2 = mockPairing(2, 30, 40, -2, -2);
-    
+
     // SF1 result: Comp 10 wins (5 - 3)
     const gpSF1 = mockGamePoint(1, 5, 3);
     // SF2 result: Comp 40 wins (2 - 6)

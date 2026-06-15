@@ -7,7 +7,7 @@ import {
   calcFinals,
   calcNextFinalRound,
   type CalcCompetitor,
-  type CalcTournamentDetails
+  type CalcTournamentDetails,
 } from 'calc-tournament';
 
 export class TournamentEngine {
@@ -34,8 +34,10 @@ export class TournamentEngine {
       if (!details) throw new Error('No tournament details found');
 
       const plan = CalcMostGamesPerCompetitorPlan(
-        allCompetitors.map((c) => ({ ...c, drawNumber: c.drawNumber ?? 0, groupID: c.groupID ?? 0, diff: 0 }) as CalcCompetitor),
-        details as unknown as CalcTournamentDetails
+        allCompetitors.map(
+          (c) => ({ ...c, drawNumber: c.drawNumber ?? 0, groupID: c.groupID ?? 0, diff: 0 }) as CalcCompetitor,
+        ),
+        details as unknown as CalcTournamentDetails,
       );
 
       // Delete gamePoints first (avoid orphans), then all pairings
@@ -52,16 +54,16 @@ export class TournamentEngine {
             startTime: p.startTime,
             court: p.court,
             gamenumber: p.gamenumber,
-          }))
+          })),
         );
       }
 
       await Promise.all(
         plan.groups.flatMap((group) =>
           group.competitors.map((c) =>
-            tx.update(competitors).set({ groupID: group.id }).where(eq(competitors.id, c.id))
-          )
-        )
+            tx.update(competitors).set({ groupID: group.id }).where(eq(competitors.id, c.id)),
+          ),
+        ),
       );
     });
   }
@@ -81,7 +83,7 @@ export class TournamentEngine {
         details.finalistCount,
         details.finalsStartTime,
         details.numberOfParallelGames,
-        details.minutesPerGame
+        details.minutesPerGame,
       );
 
       const finalsPairingIds = allPairings.filter((p) => p.groupID < 0).map((p) => p.id);
@@ -100,7 +102,7 @@ export class TournamentEngine {
             startTime: p.startTime,
             court: p.court,
             gamenumber: p.gamenumber ?? 0,
-          }))
+          })),
         );
       }
     });
@@ -135,8 +137,8 @@ export class TournamentEngine {
                 startTime: p.startTime,
                 court: p.court,
                 gamenumber: p.gamenumber ?? 0,
-              })
-        )
+              }),
+        ),
       );
     });
   }

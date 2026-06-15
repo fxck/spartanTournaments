@@ -38,29 +38,21 @@ export class PairingReads {
    * double self-join onto competitors; callers vary only the filter and
    * always get the same enriched shape, ordered by startTime then court.
    */
-  static async findPairings(
-    tx: DbOrTx = db,
-    filter: PairingFilter = {}
-  ): Promise<PairingWithCompetitors[]> {
+  static async findPairings(tx: DbOrTx = db, filter: PairingFilter = {}): Promise<PairingWithCompetitors[]> {
     const c1 = alias(competitors, 'c1');
     const c2 = alias(competitors, 'c2');
 
     const conditions: any[] = [];
     if (filter.competitorId != null) {
       conditions.push(
-        or(
-          eq(pairings.competitor1ID, filter.competitorId),
-          eq(pairings.competitor2ID, filter.competitorId)
-        )
+        or(eq(pairings.competitor1ID, filter.competitorId), eq(pairings.competitor2ID, filter.competitorId)),
       );
     }
     if (filter.pairingId != null) {
       conditions.push(eq(pairings.id, filter.pairingId));
     }
     if (filter.startTimeBetween) {
-      conditions.push(
-        between(pairings.startTime, filter.startTimeBetween.from, filter.startTimeBetween.to)
-      );
+      conditions.push(between(pairings.startTime, filter.startTimeBetween.from, filter.startTimeBetween.to));
     }
     if (filter.bothCompetitorsAssigned) {
       conditions.push(gt(pairings.competitor1ID, 0), gt(pairings.competitor2ID, 0));
@@ -90,9 +82,7 @@ export class PairingReads {
       conditions.push(isNull(gamePoints.id));
     }
 
-    return query
-      .where(conditions.length ? and(...conditions) : undefined)
-      .orderBy(pairings.startTime, pairings.court);
+    return query.where(conditions.length ? and(...conditions) : undefined).orderBy(pairings.startTime, pairings.court);
   }
 
   /**

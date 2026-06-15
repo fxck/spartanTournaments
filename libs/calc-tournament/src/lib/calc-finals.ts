@@ -9,7 +9,7 @@ export function calcFinals(
   finalistcount: number,
   startTime: Date,
   numberOfParallelGames: number,
-  minutesPerGame: number
+  minutesPerGame: number,
 ): CalcPairing[] {
   const competitors = groups.flatMap((g) => g.competitors);
   calcAllMatchPoints(competitors, gamepoints, pairings);

@@ -10,16 +10,19 @@ export default defineEventHandler(async (event) => {
   const adminPasswordHash = await bcrypt.hash(body.adminPassword, 12);
   const refereePasswordHash = await bcrypt.hash(body.refereePassword, 12);
 
-  const [created] = await db.insert(tournamentDetails).values({
-    name: body.name,
-    numberOfParallelGames: body.numberOfParallelGames,
-    minutesPerGame: body.minutesPerGame,
-    minutesAvailForGroupsPhase: body.minutesAvailForGroupsPhase,
-    finalistCount: body.finalistCount,
-    tournamentStartTime: new Date(body.tournamentStartTime),
-    finalsStartTime: new Date(body.finalsStartTime),
-    adminPasswordHash,
-    refereePasswordHash,
-  }).returning();
+  const [created] = await db
+    .insert(tournamentDetails)
+    .values({
+      name: body.name,
+      numberOfParallelGames: body.numberOfParallelGames,
+      minutesPerGame: body.minutesPerGame,
+      minutesAvailForGroupsPhase: body.minutesAvailForGroupsPhase,
+      finalistCount: body.finalistCount,
+      tournamentStartTime: new Date(body.tournamentStartTime),
+      finalsStartTime: new Date(body.finalsStartTime),
+      adminPasswordHash,
+      refereePasswordHash,
+    })
+    .returning();
   return created;
 });

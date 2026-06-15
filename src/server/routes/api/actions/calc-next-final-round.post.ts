@@ -7,4 +7,3 @@ export default defineEventHandler(async (event) => {
   await TournamentEngine.advanceFinalsRound();
   return { ok: true };
 });
-

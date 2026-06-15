@@ -10,9 +10,7 @@ export interface PostponeRequest {
   fromGameNumber?: number;
 }
 
-export type ParsePostponeResult =
-  | { ok: true; value: PostponeRequest }
-  | { ok: false; error: string };
+export type ParsePostponeResult = { ok: true; value: PostponeRequest } | { ok: false; error: string };
 
 /**
  * Validate the raw request body. `minutes` may be negative (pull games earlier,
@@ -53,7 +51,7 @@ export interface ShiftablePairing {
 export function selectPairingsToShift<T extends ShiftablePairing>(
   allPairings: T[],
   playedPairingIds: Iterable<number>,
-  fromGameNumber?: number
+  fromGameNumber?: number,
 ): T[] {
   const played = playedPairingIds instanceof Set ? playedPairingIds : new Set(playedPairingIds);
   return allPairings.filter((p) => {

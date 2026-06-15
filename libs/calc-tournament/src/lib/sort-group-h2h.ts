@@ -43,8 +43,8 @@ export function sortGroupWithH2H(competitors: CalcCompetitor[]): CalcCompetitor[
             // Apply H2H as a fallback to resolve their order
             const teamA = tiedSubgroup[k];
             const teamB = tiedSubgroup[k + 1];
-            
-            const directMatch = teamA.pairingHistory?.find(p => p.opponentID === teamB.id);
+
+            const directMatch = teamA.pairingHistory?.find((p) => p.opponentID === teamB.id);
             let score = 0;
             if (directMatch) {
               score = directMatch.gamePoints - directMatch.opponentGamePoints;
@@ -71,8 +71,8 @@ export function sortGroupWithH2H(competitors: CalcCompetitor[]): CalcCompetitor[
 }
 
 function resolveTwoWayTie(competitors: CalcCompetitor[], index: number, teamA: CalcCompetitor, teamB: CalcCompetitor) {
-  const directMatch = teamA.pairingHistory?.find(p => p.opponentID === teamB.id);
-  
+  const directMatch = teamA.pairingHistory?.find((p) => p.opponentID === teamB.id);
+
   let score = 0;
   if (directMatch) {
     score = directMatch.gamePoints - directMatch.opponentGamePoints;

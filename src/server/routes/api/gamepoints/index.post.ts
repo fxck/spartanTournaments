@@ -12,4 +12,3 @@ export default defineEventHandler(async (event) => {
 
   return MatchRegistry.recordGamePoint(undefined, pairingID, competitor1Points, competitor2Points);
 });
-

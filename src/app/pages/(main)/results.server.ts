@@ -6,10 +6,7 @@ import { PairingReads } from '../../../server/pairing-reads';
 export const load = async ({ event }: PageServerLoad) => {
   const session = await getSession(event);
 
-  const [allPairings, allGps] = await Promise.all([
-    PairingReads.findPairings(db),
-    db.select().from(gamePoints),
-  ]);
+  const [allPairings, allGps] = await Promise.all([PairingReads.findPairings(db), db.select().from(gamePoints)]);
 
   return {
     pairings: allPairings,

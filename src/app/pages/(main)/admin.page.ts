@@ -1,4 +1,12 @@
-import { Component as NgComponent, inject as ngInject, signal, effect, computed, resource, ChangeDetectionStrategy } from '@angular/core';
+import {
+  Component as NgComponent,
+  inject as ngInject,
+  signal,
+  effect,
+  computed,
+  resource,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, FormsModule, Validators } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { injectLoad, defineRouteMeta } from '@analogjs/router';
@@ -272,7 +280,7 @@ export default class AdminPage {
   private http = ngInject(HttpClient);
   private dialogService = ngInject(SimpleDialogService);
   initialData = toSignal(injectLoad<typeof load>());
-  
+
   loading = signal(false);
 
   competitorsResource = resource({
@@ -293,9 +301,8 @@ export default class AdminPage {
       if (av == null && bv == null) return 0;
       if (av == null) return 1;
       if (bv == null) return -1;
-      const cmp = typeof av === 'string'
-        ? String(av).localeCompare(String(bv), 'de', { sensitivity: 'base' })
-        : av - bv;
+      const cmp =
+        typeof av === 'string' ? String(av).localeCompare(String(bv), 'de', { sensitivity: 'base' }) : av - bv;
       return cmp * dir;
     });
   });
@@ -389,7 +396,11 @@ export default class AdminPage {
       this.competitorsResource.reload();
     } catch (err: any) {
       console.error('Add failed', err);
-      await this.dialogService.alert('Fehler', err?.error?.statusMessage ?? err?.error?.message ?? 'Teilnehmer konnte nicht hinzugefügt werden.', 'error');
+      await this.dialogService.alert(
+        'Fehler',
+        err?.error?.statusMessage ?? err?.error?.message ?? 'Teilnehmer konnte nicht hinzugefügt werden.',
+        'error',
+      );
     } finally {
       this.loading.set(false);
     }
@@ -448,22 +459,31 @@ export default class AdminPage {
     }
     this.loading.set(true);
     try {
-      await firstValueFrom(this.http.put(`/api/competitors/${id}`, {
-        name,
-        drawNumber: this.editDrawNumber,
-      }));
+      await firstValueFrom(
+        this.http.put(`/api/competitors/${id}`, {
+          name,
+          drawNumber: this.editDrawNumber,
+        }),
+      );
       this.editingId.set(null);
       this.competitorsResource.reload();
     } catch (err: any) {
       console.error('Update failed', err);
-      await this.dialogService.alert('Fehler', err?.error?.statusMessage ?? err?.error?.message ?? 'Teilnehmer konnte nicht gespeichert werden.', 'error');
+      await this.dialogService.alert(
+        'Fehler',
+        err?.error?.statusMessage ?? err?.error?.message ?? 'Teilnehmer konnte nicht gespeichert werden.',
+        'error',
+      );
     } finally {
       this.loading.set(false);
     }
   }
 
   async deleteCompetitor(id: number) {
-    if (!(await this.dialogService.confirm('Teilnehmer löschen', 'Möchtest du diesen Teilnehmer wirklich löschen?', true))) return;
+    if (
+      !(await this.dialogService.confirm('Teilnehmer löschen', 'Möchtest du diesen Teilnehmer wirklich löschen?', true))
+    )
+      return;
     this.loading.set(true);
     try {
       await firstValueFrom(this.http.delete(`/api/competitors/${id}`));
@@ -480,12 +500,7 @@ export default class AdminPage {
    * The alert fires only after `loading` is reset, so a failed or dismissed
    * dialog can never wedge the flag and disable every action button.
    */
-  private async runAction(
-    request: () => Promise<unknown>,
-    logLabel: string,
-    successMsg: string,
-    errorMsg: string
-  ) {
+  private async runAction(request: () => Promise<unknown>, logLabel: string, successMsg: string, errorMsg: string) {
     this.loading.set(true);
     let ok = false;
     try {
@@ -498,22 +513,26 @@ export default class AdminPage {
       this.loading.set(false);
     }
 
-    await this.dialogService.alert(
-      ok ? 'Erfolg' : 'Fehler',
-      ok ? successMsg : errorMsg,
-      ok ? 'success' : 'error'
-    );
+    await this.dialogService.alert(ok ? 'Erfolg' : 'Fehler', ok ? successMsg : errorMsg, ok ? 'success' : 'error');
   }
 
   async action(type: string) {
-    if (type === 'calc-tournament' && !(await this.dialogService.confirm('Spiele & Ergebnisse löschen', 'Dies löscht ALLE Spiele und Ergebnisse. Wirklich fortfahren?', true))) return;
+    if (
+      type === 'calc-tournament' &&
+      !(await this.dialogService.confirm(
+        'Spiele & Ergebnisse löschen',
+        'Dies löscht ALLE Spiele und Ergebnisse. Wirklich fortfahren?',
+        true,
+      ))
+    )
+      return;
 
     const url = type === 'random-draw' ? '/api/competitors/random-draw' : `/api/actions/${type}`;
     await this.runAction(
       () => firstValueFrom(this.http.post(url, {})),
       'Action failed',
       'Aktion erfolgreich ausgeführt.',
-      'Fehler bei der Aktion.'
+      'Fehler bei der Aktion.',
     );
   }
 
@@ -534,17 +553,20 @@ export default class AdminPage {
 
     const direction = minutes > 0 ? 'nach hinten' : 'vor';
     const scope = hasFromGame ? `ab Nr. ${fromGameNumber}` : 'alle noch nicht gespielten';
-    if (!(await this.dialogService.confirm(
-      'Spiele verschieben',
-      `Möchtest du ${scope} Spiele wirklich um ${Math.abs(minutes)} Minuten ${direction} verschieben?`,
-      { confirmLabel: 'Verschieben' }
-    ))) return;
+    if (
+      !(await this.dialogService.confirm(
+        'Spiele verschieben',
+        `Möchtest du ${scope} Spiele wirklich um ${Math.abs(minutes)} Minuten ${direction} verschieben?`,
+        { confirmLabel: 'Verschieben' },
+      ))
+    )
+      return;
 
     await this.runAction(
       () => firstValueFrom(this.http.post('/api/actions/postpone-games', { minutes, fromGameNumber })),
       'Postpone failed',
       `Die Spiele (${scope}) wurden um ${Math.abs(minutes)} Minuten ${direction} verschoben.`,
-      'Fehler beim Verschieben der Spiele.'
+      'Fehler beim Verschieben der Spiele.',
     );
   }
 }

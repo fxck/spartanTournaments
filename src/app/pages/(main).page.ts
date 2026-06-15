@@ -1,4 +1,4 @@
-import {  Component , ChangeDetectionStrategy } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { NavbarComponent } from '../components/navbar.component';
 import { defineRouteMeta } from '@analogjs/router';

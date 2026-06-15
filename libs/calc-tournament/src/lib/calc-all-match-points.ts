@@ -6,7 +6,7 @@ import { sortGroupWithH2H } from './sort-group-h2h';
 export function calcAllMatchPoints(
   competitors: CalcCompetitor[],
   gamePoints: CalcGamePoint[],
-  pairings: CalcPairing[]
+  pairings: CalcPairing[],
 ) {
   for (const competitor of competitors) {
     competitor.matchPoints = 0;

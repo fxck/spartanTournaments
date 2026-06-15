@@ -25,16 +25,16 @@ describe('calcFinals', () => {
 
     // Group stage pairings and results (empty, so they will sort by drawNumber or matchPoints which are undefined/0)
     // To mock standings, let's explicitly give them matchPoints
-    comps[0].matchPoints = 6;  // Alice: 1st
-    comps[1].matchPoints = 4;  // Bob: 2nd
-    comps[2].matchPoints = 2;  // Charlie: 3rd
-    comps[3].matchPoints = 0;  // Dave: 4th
+    comps[0].matchPoints = 6; // Alice: 1st
+    comps[1].matchPoints = 4; // Bob: 2nd
+    comps[2].matchPoints = 2; // Charlie: 3rd
+    comps[3].matchPoints = 0; // Dave: 4th
 
     const groupPairings: CalcPairing[] = [];
     const gamePoints: CalcGamePoint[] = [];
 
     const startTime = new Date('2026-05-24T12:00:00Z');
-    
+
     // We want 4 finalists.
     // Positions returned for 4: [1, 4, 3, 2]
     // Alice (1st) -> finalPosition 1
@@ -49,7 +49,7 @@ describe('calcFinals', () => {
     // Pairs:
     // Alice vs Dave -> i=0. groupID = -1, round = -2.
     // Charlie vs Bob -> i=2. groupID = -2, round = -2.
-    
+
     const result = calcFinals(
       groups,
       groupPairings,
@@ -57,30 +57,34 @@ describe('calcFinals', () => {
       4, // finalistcount
       startTime,
       2, // 2 parallel games
-      20 // 20 minutes per game
+      20, // 20 minutes per game
     );
 
     expect(result.length).toBe(2);
-    
+
     // Pairing 1: Alice (1) vs Dave (4)
-    expect(result[0]).toEqual(expect.objectContaining({
-      competitor1ID: 1,
-      competitor2ID: 4,
-      court: 1,
-      groupID: -1,
-      round: -2,
-      startTime: startTime,
-    }));
+    expect(result[0]).toEqual(
+      expect.objectContaining({
+        competitor1ID: 1,
+        competitor2ID: 4,
+        court: 1,
+        groupID: -1,
+        round: -2,
+        startTime: startTime,
+      }),
+    );
 
     // Pairing 2: Charlie (3) vs Bob (2)
-    expect(result[1]).toEqual(expect.objectContaining({
-      competitor1ID: 3,
-      competitor2ID: 2,
-      court: 2,
-      groupID: -2,
-      round: -2,
-      startTime: startTime,
-    }));
+    expect(result[1]).toEqual(
+      expect.objectContaining({
+        competitor1ID: 3,
+        competitor2ID: 2,
+        court: 2,
+        groupID: -2,
+        round: -2,
+        startTime: startTime,
+      }),
+    );
   });
 
   it('should schedule games sequentially if they exceed the parallel courts limit', () => {
@@ -98,7 +102,7 @@ describe('calcFinals', () => {
 
     const startTime = new Date('2026-05-24T12:00:00Z');
 
-    // Only 1 parallel game. 
+    // Only 1 parallel game.
     // Second game should be delayed by 20 minutes and play on court 1
     const result = calcFinals(
       groups,
@@ -107,7 +111,7 @@ describe('calcFinals', () => {
       4,
       startTime,
       1, // 1 parallel game
-      20 // 20 mins
+      20, // 20 mins
     );
 
     expect(result.length).toBe(2);

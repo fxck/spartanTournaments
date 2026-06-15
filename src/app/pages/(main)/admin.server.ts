@@ -7,8 +7,8 @@ export const load = async ({ event }: PageServerLoad) => {
     db.select().from(competitors).orderBy(competitors.name),
   ]);
 
-  return { 
-    tournament: tournament || null, 
-    competitors: allCompetitors || [] 
+  return {
+    tournament: tournament || null,
+    competitors: allCompetitors || [],
   };
 };

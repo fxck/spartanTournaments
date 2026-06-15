@@ -23,7 +23,9 @@ type ActivePairing = Awaited<ReturnType<typeof load>>[number];
         @for (pairing of activePairings(); track pairing.id) {
           <div class="border rounded-lg p-6 bg-card shadow-sm">
             <div class="flex justify-between items-start mb-4">
-              <span class="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Court {{ pairing.court }}</span>
+              <span class="text-xs font-semibold uppercase tracking-wider text-muted-foreground"
+                >Court {{ pairing.court }}</span
+              >
               <span class="text-xs font-medium px-2 py-1 rounded bg-secondary text-secondary-foreground">
                 {{ pairing.groupID > 0 ? 'Gruppe ' + pairing.groupID : getPhaseName(pairing.round) }}
               </span>
@@ -31,25 +33,35 @@ type ActivePairing = Awaited<ReturnType<typeof load>>[number];
 
             <div class="flex items-center justify-between gap-4">
               <div class="flex-1 text-center">
-                <div class="font-bold text-lg" [class.text-muted-foreground]="!pairing.competitor1?.id" [class.italic]="!pairing.competitor1?.id">
+                <div
+                  class="font-bold text-lg"
+                  [class.text-muted-foreground]="!pairing.competitor1?.id"
+                  [class.italic]="!pairing.competitor1?.id"
+                >
                   {{ pairing.competitor1?.name ?? 'Offen' }}
                 </div>
               </div>
               <div class="text-2xl font-black text-muted-foreground/30 italic">VS</div>
               <div class="flex-1 text-center">
-                <div class="font-bold text-lg" [class.text-muted-foreground]="!pairing.competitor2?.id" [class.italic]="!pairing.competitor2?.id">
+                <div
+                  class="font-bold text-lg"
+                  [class.text-muted-foreground]="!pairing.competitor2?.id"
+                  [class.italic]="!pairing.competitor2?.id"
+                >
                   {{ pairing.competitor2?.name ?? 'Offen' }}
                 </div>
               </div>
             </div>
 
             <div class="mt-6 text-center text-sm text-muted-foreground">
-              Beginn: {{ pairing.startTime | date:'HH:mm' }} Uhr
+              Beginn: {{ pairing.startTime | date: 'HH:mm' }} Uhr
             </div>
           </div>
         } @empty {
           <div class="col-span-full py-12 text-center border-2 border-dashed rounded-xl">
-            <p class="text-muted-foreground text-lg">Aktuell laufen keine Spiele oder alle Ergebnisse sind bereits erfasst.</p>
+            <p class="text-muted-foreground text-lg">
+              Aktuell laufen keine Spiele oder alle Ergebnisse sind bereits erfasst.
+            </p>
           </div>
         }
       </div>

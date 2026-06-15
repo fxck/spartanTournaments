@@ -23,7 +23,12 @@ describe('calcAllMatchPoints', () => {
     court: 1,
   });
 
-  const mockGamePoint = (id: number, pairingID: number, competitor1Points: number, competitor2Points: number): CalcGamePoint => ({
+  const mockGamePoint = (
+    id: number,
+    pairingID: number,
+    competitor1Points: number,
+    competitor2Points: number,
+  ): CalcGamePoint => ({
     id,
     pairingID,
     competitor1Points,

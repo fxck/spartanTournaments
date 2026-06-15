@@ -9,7 +9,7 @@ export class TournamentStandings {
   static async getGroupsStandings(
     tx: DbOrTx = db,
     competitorFilter: number = 0,
-    preloadedGamePoints?: GamePointRow[]
+    preloadedGamePoints?: GamePointRow[],
   ): Promise<CalcGroup[]> {
     const [allComps, allPairings, allGps] = await Promise.all([
       tx.select().from(competitors),

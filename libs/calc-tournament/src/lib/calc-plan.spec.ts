@@ -35,17 +35,17 @@ describe('calc-plan', () => {
         mockCompetitor(4, 4, 1),
       ];
       const group: CalcGroup = { id: 1, competitors: comps };
-      
+
       const pairings = getPairingsForGroup(group);
-      
+
       // With 4 players, total pairings = N * (N-1) / 2 = 6 games.
       expect(pairings.length).toBe(6);
 
       // Verify rounds (should be 3 rounds of 2 games each)
-      const rounds = pairings.map(p => p.round);
-      expect(rounds.filter(r => r === 1).length).toBe(2);
-      expect(rounds.filter(r => r === 2).length).toBe(2);
-      expect(rounds.filter(r => r === 3).length).toBe(2);
+      const rounds = pairings.map((p) => p.round);
+      expect(rounds.filter((r) => r === 1).length).toBe(2);
+      expect(rounds.filter((r) => r === 2).length).toBe(2);
+      expect(rounds.filter((r) => r === 3).length).toBe(2);
     });
   });
 
@@ -100,9 +100,9 @@ describe('calc-plan', () => {
         mockCompetitor(7, 7, 0),
         mockCompetitor(8, 8, 0),
       ];
-      
+
       const details = mockDetails(); // 120 mins available, 20 mins per game, 2 parallel games
-      
+
       const plan = CalcMostGamesPerCompetitorPlan(competitors, details);
 
       expect(plan.groups.length).toBeGreaterThan(0);

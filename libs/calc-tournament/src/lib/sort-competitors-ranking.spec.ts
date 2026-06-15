@@ -15,7 +15,7 @@ describe('sortCompetitorsRanking', () => {
   it('should sort by groupRanking if present and different', () => {
     const compA = { ...baseCompetitor(1, 'A'), groupRanking: 2 };
     const compB = { ...baseCompetitor(2, 'B'), groupRanking: 1 };
-    
+
     // a.groupRanking (2) - b.groupRanking (1) = 1 (positive, so A comes after B)
     expect(sortCompetitorsRanking(compA, compB)).toBe(1);
     expect(sortCompetitorsRanking(compB, compA)).toBe(-1);
@@ -24,7 +24,7 @@ describe('sortCompetitorsRanking', () => {
   it('should ignore groupRanking if it is identical', () => {
     const compA = { ...baseCompetitor(1, 'A'), groupRanking: 1, matchPoints: 4 };
     const compB = { ...baseCompetitor(2, 'B'), groupRanking: 1, matchPoints: 2 };
-    
+
     // same group ranking, should fallback to matchPoints.
     // matchPoints difference: 4 - 2 = 2. Returns -2 (negative, so A comes before B)
     expect(sortCompetitorsRanking(compA, compB)).toBeLessThan(0);
@@ -60,18 +60,14 @@ describe('sortCompetitorsRanking', () => {
       matchPoints: 2,
       gamePoints: 10,
       diff: 0,
-      pairingHistory: [
-        { opponentID: 2, gamePoints: 5, opponentGamePoints: 3, matchPoints: 2, diff: 2 }
-      ]
+      pairingHistory: [{ opponentID: 2, gamePoints: 5, opponentGamePoints: 3, matchPoints: 2, diff: 2 }],
     };
     const compB: CalcCompetitor = {
       ...baseCompetitor(2, 'B'),
       matchPoints: 2,
       gamePoints: 10,
       diff: 0,
-      pairingHistory: [
-        { opponentID: 1, gamePoints: 3, opponentGamePoints: 5, matchPoints: 0, diff: -2 }
-      ]
+      pairingHistory: [{ opponentID: 1, gamePoints: 3, opponentGamePoints: 5, matchPoints: 0, diff: -2 }],
     };
 
     // A beat B head to head (5 to 3), so A should be ranked higher (negative return value)

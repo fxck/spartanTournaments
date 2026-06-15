@@ -3,7 +3,7 @@ import { CalcGamePoint, CalcPairing } from '../models/models';
 export function calcNextFinalRound(
   finalPairings: CalcPairing[],
   results: CalcGamePoint[],
-  minutesPerGame: number
+  minutesPerGame: number,
 ): CalcPairing[] {
   const result: CalcPairing[] = [];
   for (const pairing of finalPairings) {

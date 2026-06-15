@@ -31,11 +31,7 @@ export default defineEventHandler(async (event) => {
     }
   }
 
-  const [updated] = await db
-    .update(competitors)
-    .set({ name, drawNumber })
-    .where(eq(competitors.id, id))
-    .returning();
+  const [updated] = await db.update(competitors).set({ name, drawNumber }).where(eq(competitors.id, id)).returning();
   if (!updated) throw createError({ statusCode: 404, statusMessage: 'Competitor not found' });
 
   return updated;

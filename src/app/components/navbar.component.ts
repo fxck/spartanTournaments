@@ -20,12 +20,38 @@ import { firstValueFrom } from 'rxjs';
 
             <!-- Desktop nav -->
             <div class="hidden md:flex items-center gap-4">
-              <a routerLink="/" routerLinkActive="text-primary" [routerLinkActiveOptions]="{exact: true}" class="text-sm font-medium transition-colors hover:text-primary">Home</a>
-              <a routerLink="/gameplan" routerLinkActive="text-primary" class="text-sm font-medium transition-colors hover:text-primary">Spielplan</a>
-              <a routerLink="/groups" routerLinkActive="text-primary" class="text-sm font-medium transition-colors hover:text-primary">Gruppen</a>
-              <a routerLink="/results" routerLinkActive="text-primary" class="text-sm font-medium transition-colors hover:text-primary">Ergebnisse</a>
+              <a
+                routerLink="/"
+                routerLinkActive="text-primary"
+                [routerLinkActiveOptions]="{ exact: true }"
+                class="text-sm font-medium transition-colors hover:text-primary"
+                >Home</a
+              >
+              <a
+                routerLink="/gameplan"
+                routerLinkActive="text-primary"
+                class="text-sm font-medium transition-colors hover:text-primary"
+                >Spielplan</a
+              >
+              <a
+                routerLink="/groups"
+                routerLinkActive="text-primary"
+                class="text-sm font-medium transition-colors hover:text-primary"
+                >Gruppen</a
+              >
+              <a
+                routerLink="/results"
+                routerLinkActive="text-primary"
+                class="text-sm font-medium transition-colors hover:text-primary"
+                >Ergebnisse</a
+              >
               @if (role() === 'admin' || role() === 'referee') {
-                <a routerLink="/referee" routerLinkActive="text-primary" class="text-sm font-medium transition-colors hover:text-primary">Schiedsrichter</a>
+                <a
+                  routerLink="/referee"
+                  routerLinkActive="text-primary"
+                  class="text-sm font-medium transition-colors hover:text-primary"
+                  >Schiedsrichter</a
+                >
               }
             </div>
           </div>
@@ -41,11 +67,30 @@ import { firstValueFrom } from 'rxjs';
             }
 
             <!-- Mobile hamburger -->
-            <button class="md:hidden p-2 rounded-md hover:bg-accent transition-colors" (click)="mobileOpen.set(!mobileOpen())">
+            <button
+              class="md:hidden p-2 rounded-md hover:bg-accent transition-colors"
+              (click)="mobileOpen.set(!mobileOpen())"
+            >
               @if (mobileOpen()) {
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="h-5 w-5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
               } @else {
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="h-5 w-5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
               }
             </button>
           </div>
@@ -54,21 +99,61 @@ import { firstValueFrom } from 'rxjs';
         <!-- Mobile dropdown -->
         @if (mobileOpen()) {
           <div class="md:hidden border-t py-4 space-y-1" (click)="mobileOpen.set(false)">
-            <a routerLink="/" routerLinkActive="bg-accent" [routerLinkActiveOptions]="{exact: true}" class="block px-3 py-2 rounded-md text-sm font-medium hover:bg-accent transition-colors">Home</a>
-            <a routerLink="/gameplan" routerLinkActive="bg-accent" class="block px-3 py-2 rounded-md text-sm font-medium hover:bg-accent transition-colors">Spielplan</a>
-            <a routerLink="/groups" routerLinkActive="bg-accent" class="block px-3 py-2 rounded-md text-sm font-medium hover:bg-accent transition-colors">Gruppen</a>
-            <a routerLink="/results" routerLinkActive="bg-accent" class="block px-3 py-2 rounded-md text-sm font-medium hover:bg-accent transition-colors">Ergebnisse</a>
+            <a
+              routerLink="/"
+              routerLinkActive="bg-accent"
+              [routerLinkActiveOptions]="{ exact: true }"
+              class="block px-3 py-2 rounded-md text-sm font-medium hover:bg-accent transition-colors"
+              >Home</a
+            >
+            <a
+              routerLink="/gameplan"
+              routerLinkActive="bg-accent"
+              class="block px-3 py-2 rounded-md text-sm font-medium hover:bg-accent transition-colors"
+              >Spielplan</a
+            >
+            <a
+              routerLink="/groups"
+              routerLinkActive="bg-accent"
+              class="block px-3 py-2 rounded-md text-sm font-medium hover:bg-accent transition-colors"
+              >Gruppen</a
+            >
+            <a
+              routerLink="/results"
+              routerLinkActive="bg-accent"
+              class="block px-3 py-2 rounded-md text-sm font-medium hover:bg-accent transition-colors"
+              >Ergebnisse</a
+            >
             @if (role() === 'admin' || role() === 'referee') {
-              <a routerLink="/referee" routerLinkActive="bg-accent" class="block px-3 py-2 rounded-md text-sm font-medium hover:bg-accent transition-colors">Schiedsrichter</a>
+              <a
+                routerLink="/referee"
+                routerLinkActive="bg-accent"
+                class="block px-3 py-2 rounded-md text-sm font-medium hover:bg-accent transition-colors"
+                >Schiedsrichter</a
+              >
             }
             @if (role() === 'admin') {
-              <a routerLink="/admin" routerLinkActive="bg-accent" class="block px-3 py-2 rounded-md text-sm font-medium hover:bg-accent transition-colors">Admin</a>
+              <a
+                routerLink="/admin"
+                routerLinkActive="bg-accent"
+                class="block px-3 py-2 rounded-md text-sm font-medium hover:bg-accent transition-colors"
+                >Admin</a
+              >
             }
             <div class="pt-2 border-t mt-2">
               @if (role()) {
-                <button class="w-full text-left px-3 py-2 rounded-md text-sm font-medium hover:bg-accent transition-colors" (click)="logout()">Logout</button>
+                <button
+                  class="w-full text-left px-3 py-2 rounded-md text-sm font-medium hover:bg-accent transition-colors"
+                  (click)="logout()"
+                >
+                  Logout
+                </button>
               } @else {
-                <a routerLink="/login" class="block px-3 py-2 rounded-md text-sm font-medium hover:bg-accent transition-colors">Login</a>
+                <a
+                  routerLink="/login"
+                  class="block px-3 py-2 rounded-md text-sm font-medium hover:bg-accent transition-colors"
+                  >Login</a
+                >
               }
             </div>
           </div>
@@ -85,9 +170,7 @@ export class NavbarComponent {
   role = computed(() => this._session()?.role ?? null);
   mobileOpen = signal(false);
 
-  private _tournament = toSignal(
-    this.http.get<{ tournament: { name: string } | null }>('/api/tournament'),
-  );
+  private _tournament = toSignal(this.http.get<{ tournament: { name: string } | null }>('/api/tournament'));
   tournamentName = computed(() => this._tournament()?.tournament?.name ?? 'spartanTournaments');
 
   constructor() {

@@ -1,4 +1,4 @@
-import {  Component , ChangeDetectionStrategy } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { SimpleDialogComponent } from './shared/simple-dialog/simple-dialog.component';
 

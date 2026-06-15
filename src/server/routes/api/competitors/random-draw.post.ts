@@ -7,4 +7,3 @@ export default defineEventHandler(async (event) => {
   await TournamentEngine.assignRandomDraw();
   return { ok: true };
 });
-

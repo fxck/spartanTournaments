@@ -19,19 +19,21 @@ export const routeMeta = defineRouteMeta({
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-referee-score-entry',
-  imports: [
-    CommonModule,
-    ReactiveFormsModule,
-    RouterLink,
-    HlmButton,
-    HlmInput,
-    HlmLabel,
-  ],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink, HlmButton, HlmInput, HlmLabel],
   template: `
     <div class="max-w-2xl mx-auto space-y-6">
-      <a routerLink="/referee" class="text-sm text-muted-foreground hover:text-primary transition-colors inline-flex items-center gap-1.5 group">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 transform group-hover:-translate-x-0.5 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+      <a
+        routerLink="/referee"
+        class="text-sm text-muted-foreground hover:text-primary transition-colors inline-flex items-center gap-1.5 group"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          class="h-4 w-4 transform group-hover:-translate-x-0.5 transition-transform"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
         </svg>
         Zurück zur Übersicht
       </a>
@@ -43,13 +45,21 @@ export const routeMeta = defineRouteMeta({
             <div>
               <span class="text-xs font-semibold text-primary uppercase tracking-wider">Ergebnis eintragen</span>
               <h2 class="text-2xl font-bold tracking-tight mt-0.5">
-                @if (p.gamenumber > 0) { Spiel Nr. {{ p.gamenumber }} } @else { Spiel }
+                @if (p.gamenumber > 0) {
+                  Spiel Nr. {{ p.gamenumber }}
+                } @else {
+                  Spiel
+                }
               </h2>
             </div>
             <div class="flex gap-2">
-              <span class="px-3 py-1.5 bg-primary/10 text-primary font-bold rounded-lg text-sm">Court {{ p.court }}</span>
+              <span class="px-3 py-1.5 bg-primary/10 text-primary font-bold rounded-lg text-sm"
+                >Court {{ p.court }}</span
+              >
               @if (p.round > 0) {
-                <span class="px-3 py-1.5 bg-muted text-muted-foreground font-semibold rounded-lg text-sm">Runde {{ p.round }}</span>
+                <span class="px-3 py-1.5 bg-muted text-muted-foreground font-semibold rounded-lg text-sm"
+                  >Runde {{ p.round }}</span
+                >
               }
             </div>
           </div>
@@ -57,24 +67,40 @@ export const routeMeta = defineRouteMeta({
           <!-- Score Input Form -->
           <form [formGroup]="resultForm" (ngSubmit)="saveResult()" class="p-8 space-y-8">
             <div class="grid grid-cols-2 gap-8 md:gap-12 relative">
-              
               <!-- Competitor 1 -->
               <div class="space-y-4 text-center">
-                <label hlmLabel class="text-lg font-semibold block truncate" title="{{ p.competitor1?.name }}">{{ p.competitor1?.name }}</label>
-                <input hlmInput type="number" (focus)="selectText($event)" formControlName="competitor1Points" class="text-center text-4xl font-extrabold h-24 w-full shadow-inner border-2 focus:border-primary transition-all rounded-xl" />
+                <label hlmLabel class="text-lg font-semibold block truncate" title="{{ p.competitor1?.name }}">{{
+                  p.competitor1?.name
+                }}</label>
+                <input
+                  hlmInput
+                  type="number"
+                  (focus)="selectText($event)"
+                  formControlName="competitor1Points"
+                  class="text-center text-4xl font-extrabold h-24 w-full shadow-inner border-2 focus:border-primary transition-all rounded-xl"
+                />
               </div>
 
               <!-- VS Badge -->
-              <div class="absolute left-1/2 bottom-12 -translate-x-1/2 translate-y-1/2 bg-muted border font-bold text-xs px-2.5 py-1 rounded-full text-muted-foreground shadow-sm uppercase">
+              <div
+                class="absolute left-1/2 bottom-12 -translate-x-1/2 translate-y-1/2 bg-muted border font-bold text-xs px-2.5 py-1 rounded-full text-muted-foreground shadow-sm uppercase"
+              >
                 VS
               </div>
 
               <!-- Competitor 2 -->
               <div class="space-y-4 text-center">
-                <label hlmLabel class="text-lg font-semibold block truncate" title="{{ p.competitor2?.name }}">{{ p.competitor2?.name }}</label>
-                <input hlmInput type="number" (focus)="selectText($event)" formControlName="competitor2Points" class="text-center text-4xl font-extrabold h-24 w-full shadow-inner border-2 focus:border-primary transition-all rounded-xl" />
+                <label hlmLabel class="text-lg font-semibold block truncate" title="{{ p.competitor2?.name }}">{{
+                  p.competitor2?.name
+                }}</label>
+                <input
+                  hlmInput
+                  type="number"
+                  (focus)="selectText($event)"
+                  formControlName="competitor2Points"
+                  class="text-center text-4xl font-extrabold h-24 w-full shadow-inner border-2 focus:border-primary transition-all rounded-xl"
+                />
               </div>
-
             </div>
 
             <!-- Footer Buttons -->
@@ -82,7 +108,9 @@ export const routeMeta = defineRouteMeta({
               <a hlmBtn variant="ghost" routerLink="/referee" class="w-28">Abbrechen</a>
               <button hlmBtn [disabled]="resultForm.invalid || loading()" class="w-36 gap-2">
                 @if (loading()) {
-                  <span class="animate-spin inline-block w-4 h-4 border-2 border-current border-t-transparent rounded-full"></span>
+                  <span
+                    class="animate-spin inline-block w-4 h-4 border-2 border-current border-t-transparent rounded-full"
+                  ></span>
                 }
                 Speichern
               </button>
@@ -92,7 +120,9 @@ export const routeMeta = defineRouteMeta({
       } @else {
         <div class="text-center py-20 border-2 border-dashed rounded-2xl bg-card">
           <h2 class="text-2xl font-bold">Spiel nicht gefunden</h2>
-          <p class="text-muted-foreground mt-2">Das gesuchte Spiel existiert nicht oder Sie haben eine ungültige ID aufgerufen.</p>
+          <p class="text-muted-foreground mt-2">
+            Das gesuchte Spiel existiert nicht oder Sie haben eine ungültige ID aufgerufen.
+          </p>
           <a hlmBtn class="mt-6" routerLink="/referee">Zurück zur Übersicht</a>
         </div>
       }
@@ -107,7 +137,7 @@ export default class RefereeScoreEntryPage {
   data = toSignal(injectLoad<typeof load>());
   pairing = computed(() => this.data()?.pairing ?? null);
   gamepoint = computed(() => this.data()?.gamepoint ?? null);
-  
+
   loading = signal(false);
 
   resultForm = this.fb.group({
@@ -145,9 +175,9 @@ export default class RefereeScoreEntryPage {
         competitor2Points: this.resultForm.value.competitor2Points ?? 0,
         pairingID: p.id,
       };
-      
+
       await firstValueFrom(this.http.post<any>('/api/gamepoints', payload));
-      
+
       // Navigate back to overview upon success
       this.router.navigate(['/referee']);
     } catch (err) {

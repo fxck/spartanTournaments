@@ -6,58 +6,58 @@ import { BrnAutocompleteAnchor, BrnAutocompleteClear, BrnAutocompleteInput } fro
 import { HlmInputGroupImports } from '@spartan-ng/helm/input-group';
 
 @Component({
-	selector: 'hlm-autocomplete-input',
-	imports: [HlmInputGroupImports, NgIcon, BrnAutocompleteAnchor, BrnAutocompleteClear, BrnAutocompleteInput],
-	providers: [provideIcons({ lucideSearch, lucideX })],
-	changeDetection: ChangeDetectionStrategy.OnPush,
-	template: `
-		<hlm-input-group brnAutocompleteAnchor class="w-auto">
-			<input
-				brnAutocompleteInput
-				#autocompleteInput="brnAutocompleteInput"
-				hlmInputGroupInput
-				[id]="inputId()"
-				[placeholder]="placeholder()"
-				[aria-invalid]="ariaInvalidOverride()"
-			/>
+  selector: 'hlm-autocomplete-input',
+  imports: [HlmInputGroupImports, NgIcon, BrnAutocompleteAnchor, BrnAutocompleteClear, BrnAutocompleteInput],
+  providers: [provideIcons({ lucideSearch, lucideX })],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  template: `
+    <hlm-input-group brnAutocompleteAnchor class="w-auto">
+      <input
+        brnAutocompleteInput
+        #autocompleteInput="brnAutocompleteInput"
+        hlmInputGroupInput
+        [id]="inputId()"
+        [placeholder]="placeholder()"
+        [aria-invalid]="ariaInvalidOverride()"
+      />
 
-			@if (showSearch()) {
-				<hlm-input-group-addon>
-					<ng-icon name="lucideSearch" [class.opacity-50]="autocompleteInput.disabled()" />
-				</hlm-input-group-addon>
-			}
+      @if (showSearch()) {
+        <hlm-input-group-addon>
+          <ng-icon name="lucideSearch" [class.opacity-50]="autocompleteInput.disabled()" />
+        </hlm-input-group-addon>
+      }
 
-			@if (showClear()) {
-				<hlm-input-group-addon align="inline-end">
-					<button
-						*brnAutocompleteClear
-						hlmInputGroupButton
-						data-slot="autocomplete-clear"
-						[disabled]="autocompleteInput.disabled()"
-						size="icon-xs"
-						variant="ghost"
-					>
-						<ng-icon name="lucideX" />
-					</button>
-				</hlm-input-group-addon>
-			}
-			<ng-content />
-		</hlm-input-group>
-	`,
+      @if (showClear()) {
+        <hlm-input-group-addon align="inline-end">
+          <button
+            *brnAutocompleteClear
+            hlmInputGroupButton
+            data-slot="autocomplete-clear"
+            [disabled]="autocompleteInput.disabled()"
+            size="icon-xs"
+            variant="ghost"
+          >
+            <ng-icon name="lucideX" />
+          </button>
+        </hlm-input-group-addon>
+      }
+      <ng-content />
+    </hlm-input-group>
+  `,
 })
 export class HlmAutocompleteInput {
-	private static _id = 0;
+  private static _id = 0;
 
-	public readonly inputId = input<string>(`hlm-autocomplete-input-${HlmAutocompleteInput._id++}`);
+  public readonly inputId = input<string>(`hlm-autocomplete-input-${HlmAutocompleteInput._id++}`);
 
-	public readonly placeholder = input<string>('');
+  public readonly placeholder = input<string>('');
 
-	public readonly showSearch = input<boolean, BooleanInput>(true, { transform: booleanAttribute });
-	public readonly showClear = input<boolean, BooleanInput>(false, { transform: booleanAttribute });
+  public readonly showSearch = input<boolean, BooleanInput>(true, { transform: booleanAttribute });
+  public readonly showClear = input<boolean, BooleanInput>(false, { transform: booleanAttribute });
 
-	/** Manual override for aria-invalid. When not set, auto-detects from the parent autocomplete error state. */
-	public readonly ariaInvalidOverride = input<boolean | undefined, BooleanInput>(undefined, {
-		transform: (v: BooleanInput) => (v === '' || v === undefined ? undefined : booleanAttribute(v)),
-		alias: 'aria-invalid',
-	});
+  /** Manual override for aria-invalid. When not set, auto-detects from the parent autocomplete error state. */
+  public readonly ariaInvalidOverride = input<boolean | undefined, BooleanInput>(undefined, {
+    transform: (v: BooleanInput) => (v === '' || v === undefined ? undefined : booleanAttribute(v)),
+    alias: 'aria-invalid',
+  });
 }

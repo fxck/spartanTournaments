@@ -16,14 +16,7 @@ import { SimpleDialogService } from '../shared/simple-dialog/simple-dialog.servi
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-setup',
-  imports: [
-    CommonModule,
-    ReactiveFormsModule,
-    HlmButton,
-    HlmInput,
-    HlmLabel,
-    ...HlmCardImports,
-  ],
+  imports: [CommonModule, ReactiveFormsModule, HlmButton, HlmInput, HlmLabel, ...HlmCardImports],
   template: `
     <div class="flex justify-center items-center min-h-screen p-4 bg-muted/40">
       <section hlmCard class="w-full max-w-2xl">
@@ -31,7 +24,7 @@ import { SimpleDialogService } from '../shared/simple-dialog/simple-dialog.servi
           <h1 hlmCardTitle>Turnier Setup</h1>
           <p hlmCardDescription>Initialisiere dein Boccia-Turnier. Diese Seite ist nur einmalig erreichbar.</p>
         </header>
-        
+
         <form [formGroup]="setupForm" (ngSubmit)="onSubmit()" hlmCardContent class="grid gap-6">
           <div class="grid gap-2">
             <label hlmLabel for="name">Turnier Name</label>
@@ -51,7 +44,12 @@ import { SimpleDialogService } from '../shared/simple-dialog/simple-dialog.servi
 
             <div class="grid gap-2">
               <label hlmLabel for="minutesAvailForGroupsPhase">Verfügbare Zeit Gruppenphase (Minuten)</label>
-              <input hlmInput type="number" id="minutesAvailForGroupsPhase" formControlName="minutesAvailForGroupsPhase" />
+              <input
+                hlmInput
+                type="number"
+                id="minutesAvailForGroupsPhase"
+                formControlName="minutesAvailForGroupsPhase"
+              />
             </div>
 
             <div class="grid gap-2">
@@ -101,7 +99,7 @@ export default class SetupPage {
   private http = inject(HttpClient);
   private router = inject(Router);
   private dialogService = inject(SimpleDialogService);
-  
+
   data = toSignal(injectLoad<typeof load>());
   loading = signal(false);
 

@@ -15,20 +15,13 @@ import { firstValueFrom } from 'rxjs';
  * the SSR render already has its data. The loader returns undefined there, so
  * the computed falls back to `ssrData` during SSR.
  */
-export function injectLivePairings<T>(
-  apiUrl: string,
-  ssrData: Signal<T>,
-  intervalMs = 30_000
-): Signal<T> {
+export function injectLivePairings<T>(apiUrl: string, ssrData: Signal<T>, intervalMs = 30_000): Signal<T> {
   const http = inject(HttpClient);
   const platformId = inject(PLATFORM_ID);
   const destroyRef = inject(DestroyRef);
 
   const live = resource({
-    loader: () =>
-      isPlatformBrowser(platformId)
-        ? firstValueFrom(http.get<T>(apiUrl))
-        : Promise.resolve(undefined),
+    loader: () => (isPlatformBrowser(platformId) ? firstValueFrom(http.get<T>(apiUrl)) : Promise.resolve(undefined)),
   });
 
   if (isPlatformBrowser(platformId)) {

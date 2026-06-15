@@ -14,7 +14,7 @@ describe('calcGroups', () => {
 
   it('should throw an error if the groupCount is greater than half of the competitors', () => {
     const competitors = [mockCompetitor(1, 1), mockCompetitor(2, 2)];
-    
+
     // half of competitors is 1. If groupCount is 2, it should throw.
     expect(() => calcGroups(competitors, 2)).toThrow('too many groups for this count of competitors!');
   });
@@ -37,9 +37,9 @@ describe('calcGroups', () => {
     // Distributed as:
     // Group 1: Comp 2 (first), then Comp 1 (third)
     // Group 2: Comp 4 (second), then Comp 3 (fourth)
-    
-    expect(result[0].competitors.map(c => c.id)).toEqual([2, 1]);
-    expect(result[1].competitors.map(c => c.id)).toEqual([4, 3]);
+
+    expect(result[0].competitors.map((c) => c.id)).toEqual([2, 1]);
+    expect(result[1].competitors.map((c) => c.id)).toEqual([4, 3]);
   });
 
   it('should handle uneven distributions correctly', () => {

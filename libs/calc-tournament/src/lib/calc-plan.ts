@@ -10,7 +10,7 @@ interface PlanCalc {
 export function CalcPlan(
   allCompetitors: CalcCompetitor[],
   groups: CalcGroup[],
-  details: CalcTournamentDetails
+  details: CalcTournamentDetails,
 ): { rounds: CalcPairing[][]; allPairs: CalcPairing[] } {
   const calc: PlanCalc = {
     groups,
@@ -57,7 +57,7 @@ function foundSameCompetitorInRound(p: CalcPairing, round: CalcPairing[]): boole
       r.competitor1ID === p.competitor1ID ||
       r.competitor1ID === p.competitor2ID ||
       r.competitor2ID === p.competitor1ID ||
-      r.competitor2ID === p.competitor2ID
+      r.competitor2ID === p.competitor2ID,
   );
 }
 
@@ -93,7 +93,7 @@ function calcPairsFromGroups(calc: PlanCalc): CalcPairing[] {
 
 function inPairings(p: CalcPairing, ps: CalcPairing[]): boolean {
   return ps.some(
-    (mp) => mp.competitor1ID === p.competitor1ID && mp.competitor2ID === p.competitor2ID && mp.round === p.round
+    (mp) => mp.competitor1ID === p.competitor1ID && mp.competitor2ID === p.competitor2ID && mp.round === p.round,
   );
 }
 
@@ -160,7 +160,7 @@ function getGamesPerRound(g: CalcGroup): number {
 
 export function CalcMostGamesPerCompetitorPlan(
   competitors: CalcCompetitor[],
-  details: CalcTournamentDetails
+  details: CalcTournamentDetails,
 ): { groups: CalcGroup[]; pairings: CalcPairing[] } {
   let groups: CalcGroup[] = [];
   let pairings: CalcPairing[] = [];

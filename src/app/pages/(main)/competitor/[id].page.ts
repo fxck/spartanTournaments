@@ -1,4 +1,4 @@
-import {  Component, inject, computed, signal, effect , ChangeDetectionStrategy } from '@angular/core';
+import { Component, inject, computed, signal, effect, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { HlmTableImports } from '@spartan-ng/helm/table';
 import { HlmTabsImports } from '@spartan-ng/helm/tabs';
@@ -37,7 +37,7 @@ import type { load } from './[id].server';
                 <div class="border rounded-lg p-4 shadow-sm">
                   <div class="flex items-center justify-between text-xs text-muted-foreground mb-2">
                     <span class="font-mono">#{{ p.gamenumber > 0 ? p.gamenumber : '-' }}</span>
-                    <span>{{ p.startTime | date:'HH:mm' }} · Court {{ p.court }}</span>
+                    <span>{{ p.startTime | date: 'HH:mm' }} · Court {{ p.court }}</span>
                   </div>
                   <div class="flex items-baseline justify-between gap-3">
                     @let opp = getOpponent(p);
@@ -48,7 +48,9 @@ import type { load } from './[id].server';
                     }
                     <span class="font-black text-lg tabular-nums shrink-0">
                       @if (p.points) {
-                        <span [class.text-green-600]="isWinner(p)" [class.text-red-600]="isLoser(p)">{{ getMyPoints(p) }}:{{ getOpponentPoints(p) }}</span>
+                        <span [class.text-green-600]="isWinner(p)" [class.text-red-600]="isLoser(p)"
+                          >{{ getMyPoints(p) }}:{{ getOpponentPoints(p) }}</span
+                        >
                       } @else {
                         <span class="text-muted-foreground/40 font-normal">-:-</span>
                       }
@@ -56,7 +58,9 @@ import type { load } from './[id].server';
                   </div>
                 </div>
               } @empty {
-                <div class="text-center py-12 text-muted-foreground italic">Noch keine Spiele für diesen Teilnehmer.</div>
+                <div class="text-center py-12 text-muted-foreground italic">
+                  Noch keine Spiele für diesen Teilnehmer.
+                </div>
               }
             </div>
 
@@ -74,9 +78,11 @@ import type { load } from './[id].server';
                 <tbody hlmTBody>
                   @for (p of myPairings(); track p.id) {
                     <tr hlmTr>
-                      <td hlmTd class="w-16 text-muted-foreground font-mono">{{ p.gamenumber > 0 ? p.gamenumber : '-' }}</td>
+                      <td hlmTd class="w-16 text-muted-foreground font-mono">
+                        {{ p.gamenumber > 0 ? p.gamenumber : '-' }}
+                      </td>
                       <td hlmTd class="w-32">
-                        <div class="font-medium">{{ p.startTime | date:'HH:mm' }}</div>
+                        <div class="font-medium">{{ p.startTime | date: 'HH:mm' }}</div>
                         <div class="text-xs text-muted-foreground">Court {{ p.court }}</div>
                       </td>
                       <td hlmTd>
@@ -99,7 +105,9 @@ import type { load } from './[id].server';
                     </tr>
                   } @empty {
                     <tr hlmTr>
-                      <td hlmTd colspan="4" class="text-center py-12 text-muted-foreground italic">Noch keine Spiele für diesen Teilnehmer.</td>
+                      <td hlmTd colspan="4" class="text-center py-12 text-muted-foreground italic">
+                        Noch keine Spiele für diesen Teilnehmer.
+                      </td>
                     </tr>
                   }
                 </tbody>
@@ -119,11 +127,20 @@ import type { load } from './[id].server';
                     <div class="flex items-center gap-3 p-3" [class.bg-primary/10]="comp.id === c.id">
                       <span class="w-6 text-center font-bold shrink-0">{{ i + 1 }}</span>
                       <span class="flex-1 min-w-0 font-medium break-words">
-                        {{ comp.name }} @if(comp.id === c.id){ <span class="text-xs text-muted-foreground">(Du)</span> }
+                        {{ comp.name }}
+                        @if (comp.id === c.id) {
+                          <span class="text-xs text-muted-foreground">(Du)</span>
+                        }
                       </span>
                       <div class="flex gap-3 shrink-0 text-center leading-tight">
-                        <div class="w-9"><div class="font-bold text-sm">{{ comp.matchPoints }}</div><div class="text-[10px] uppercase text-muted-foreground">MP</div></div>
-                        <div class="w-10"><div class="text-sm font-mono">{{ comp.diff > 0 ? '+' : '' }}{{ comp.diff }}</div><div class="text-[10px] uppercase text-muted-foreground">Diff</div></div>
+                        <div class="w-9">
+                          <div class="font-bold text-sm">{{ comp.matchPoints }}</div>
+                          <div class="text-[10px] uppercase text-muted-foreground">MP</div>
+                        </div>
+                        <div class="w-10">
+                          <div class="text-sm font-mono">{{ comp.diff > 0 ? '+' : '' }}{{ comp.diff }}</div>
+                          <div class="text-[10px] uppercase text-muted-foreground">Diff</div>
+                        </div>
                       </div>
                     </div>
                   }
@@ -145,10 +162,15 @@ import type { load } from './[id].server';
                         <tr hlmTr [class.bg-primary/10]="comp.id === c.id">
                           <td hlmTd class="w-12 text-center font-bold">{{ i + 1 }}</td>
                           <td hlmTd class="font-medium">
-                            {{ comp.name }} @if(comp.id === c.id){ <span class="text-xs text-muted-foreground ml-1">(Du)</span> }
+                            {{ comp.name }}
+                            @if (comp.id === c.id) {
+                              <span class="text-xs text-muted-foreground ml-1">(Du)</span>
+                            }
                           </td>
                           <td hlmTd class="w-20 text-center font-bold">{{ comp.matchPoints }}</td>
-                          <td hlmTd class="w-20 text-center font-mono border-l">{{ comp.diff > 0 ? '+' : '' }}{{ comp.diff }}</td>
+                          <td hlmTd class="w-20 text-center font-mono border-l">
+                            {{ comp.diff > 0 ? '+' : '' }}{{ comp.diff }}
+                          </td>
                         </tr>
                       }
                     </tbody>
@@ -173,7 +195,7 @@ import type { load } from './[id].server';
 })
 export default class CompetitorDetailPage {
   data = toSignal(injectLoad<typeof load>());
-  
+
   myPairings = computed(() => {
     const d = this.data();
     const c = d?.competitor;
@@ -184,7 +206,7 @@ export default class CompetitorDetailPage {
       .filter((p: any) => p.competitor1.id === c.id || p.competitor2.id === c.id)
       .map((p: any) => ({
         ...p,
-        points: gps.find((g: any) => g.pairingID === p.id)
+        points: gps.find((g: any) => g.pairingID === p.id),
       }));
   });
 

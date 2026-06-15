@@ -31,7 +31,10 @@ export default defineEventHandler(async (event) => {
       throw createError({ statusCode: 400, statusMessage: 'No names provided' });
     }
     const created = fresh.length
-      ? await db.insert(competitors).values(fresh.map((name) => ({ name }))).returning()
+      ? await db
+          .insert(competitors)
+          .values(fresh.map((name) => ({ name })))
+          .returning()
       : [];
     return { created, skipped };
   }

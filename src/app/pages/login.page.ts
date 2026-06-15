@@ -1,4 +1,4 @@
-import {  Component, inject, signal , ChangeDetectionStrategy } from '@angular/core';
+import { Component, inject, signal, ChangeDetectionStrategy } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
@@ -12,14 +12,7 @@ import { CommonModule } from '@angular/common';
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-login',
-  imports: [
-    CommonModule,
-    ReactiveFormsModule,
-    HlmButton,
-    HlmInput,
-    HlmLabel,
-    ...HlmCardImports,
-  ],
+  imports: [CommonModule, ReactiveFormsModule, HlmButton, HlmInput, HlmLabel, ...HlmCardImports],
   template: `
     <div class="flex justify-center items-center min-h-screen p-4 bg-muted/40">
       <section hlmCard class="w-full max-w-sm">
@@ -27,7 +20,7 @@ import { CommonModule } from '@angular/common';
           <h1 hlmCardTitle>Login</h1>
           <p hlmCardDescription>Gib dein Passwort ein, um dich als Admin oder Referee anzumelden.</p>
         </header>
-        
+
         <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" hlmCardContent class="grid gap-4">
           <div class="grid gap-2">
             <label hlmLabel for="password">Passwort</label>
@@ -38,11 +31,9 @@ import { CommonModule } from '@angular/common';
             <button hlmBtn [disabled]="loginForm.invalid || loading()">
               {{ loading() ? 'Wird angemeldet...' : 'Anmelden' }}
             </button>
-            <button hlmBtn variant="ghost" type="button" (click)="goBack()">
-              Abbrechen
-            </button>
+            <button hlmBtn variant="ghost" type="button" (click)="goBack()">Abbrechen</button>
           </div>
-          
+
           @if (error()) {
             <p class="text-destructive text-sm text-center mt-2">{{ error() }}</p>
           }
@@ -55,7 +46,7 @@ export default class LoginPage {
   private fb = inject(FormBuilder);
   private http = inject(HttpClient);
   private router = inject(Router);
-  
+
   loading = signal(false);
   error = signal<string | null>(null);
 
@@ -67,7 +58,7 @@ export default class LoginPage {
     if (this.loginForm.invalid) return;
     this.loading.set(true);
     this.error.set(null);
-    
+
     try {
       const res = await lastValueFrom(this.http.post<{ role: string }>('/api/auth/login', this.loginForm.value));
       if (res.role === 'admin') {
