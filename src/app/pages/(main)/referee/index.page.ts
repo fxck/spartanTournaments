@@ -30,39 +30,39 @@ export const routeMeta = defineRouteMeta({
       <!-- Mobile: Karten -->
       <div class="space-y-3 md:hidden">
         @for (p of pairings(); track p.id) {
-          <div class="border rounded-lg p-4 shadow-sm bg-card">
-            <div class="flex items-center justify-between gap-2 mb-3">
-              <span class="font-mono text-xs text-muted-foreground">#{{ p.gamenumber > 0 ? p.gamenumber : '-' }}</span>
-              <span class="flex items-center gap-2">
-                <span class="px-2 py-0.5 bg-primary/10 text-primary font-bold rounded-md text-xs"
-                  >Court {{ p.court }}</span
+          <a
+            [routerLink]="['/referee', p.id]"
+            class="block border rounded-xl shadow-sm bg-card overflow-hidden active:bg-muted/40 transition-colors"
+          >
+            <!-- Prominent header: court + start time are what referees scan for -->
+            <div class="flex items-stretch border-b bg-muted/30">
+              <div class="flex-1 flex items-center gap-2 px-4 py-2.5">
+                <span class="text-base font-bold text-primary leading-none tracking-tight">Court {{ p.court }}</span>
+              </div>
+              <div class="flex items-center gap-1.5 px-4 py-2.5 border-l bg-card">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="h-4 w-4 text-muted-foreground"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
                 >
-                <a
-                  hlmBtn
-                  variant="outline"
-                  size="sm"
-                  [routerLink]="['/referee', p.id]"
-                  class="gap-1 shadow-sm font-semibold h-7"
-                >
-                  {{ p.startTime | date: 'HH:mm' }} Uhr
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    class="h-4 w-4"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-                  </svg>
-                </a>
-              </span>
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span class="text-base font-bold tabular-nums leading-none">{{ p.startTime | date: 'HH:mm' }}</span>
+              </div>
             </div>
-            <div class="space-y-1 text-center">
+
+            <!-- Matchup -->
+            <div class="relative px-4 py-4 space-y-1 text-center">
               <div class="font-medium break-words">{{ p.competitor1?.name }}</div>
               <div class="text-muted-foreground/50 text-xs italic font-bold">VS</div>
               <div class="font-medium break-words">{{ p.competitor2?.name }}</div>
+              <span class="absolute bottom-1.5 right-2 font-mono text-[10px] text-muted-foreground/40"
+                >#{{ p.gamenumber > 0 ? p.gamenumber : '-' }}</span
+              >
             </div>
-          </div>
+          </a>
         } @empty {
           <div class="flex flex-col items-center justify-center gap-3 py-20 text-center text-muted-foreground italic">
             <svg

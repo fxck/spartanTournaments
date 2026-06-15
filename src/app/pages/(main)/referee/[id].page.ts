@@ -2,7 +2,7 @@ import { Component, inject, computed, signal, effect, ChangeDetectionStrategy } 
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
-import { Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 import { HlmButton } from '@spartan-ng/helm/button';
 import { HlmInput } from '@spartan-ng/helm/input';
@@ -23,7 +23,7 @@ export const routeMeta = defineRouteMeta({
   template: `
     <div class="max-w-2xl mx-auto space-y-6">
       <a
-        routerLink="/referee"
+        [routerLink]="returnUrl"
         class="text-sm text-muted-foreground hover:text-primary transition-colors inline-flex items-center gap-1.5 group"
       >
         <svg
@@ -115,7 +115,7 @@ export const routeMeta = defineRouteMeta({
 
             <!-- Footer Buttons -->
             <div class="flex justify-end gap-3 pt-6 border-t">
-              <a hlmBtn variant="ghost" routerLink="/referee" class="w-28">Abbrechen</a>
+              <a hlmBtn variant="ghost" [routerLink]="returnUrl" class="w-28">Abbrechen</a>
               <button hlmBtn [disabled]="resultForm.invalid || loading()" class="w-36 gap-2">
                 @if (loading()) {
                   <span
@@ -133,7 +133,7 @@ export const routeMeta = defineRouteMeta({
           <p class="text-muted-foreground mt-2">
             Das gesuchte Spiel existiert nicht oder Sie haben eine ungültige ID aufgerufen.
           </p>
-          <a hlmBtn class="mt-6" routerLink="/referee">Zurück zur Übersicht</a>
+          <a hlmBtn class="mt-6" [routerLink]="returnUrl">Zurück zur Übersicht</a>
         </div>
       }
     </div>
@@ -143,6 +143,10 @@ export default class RefereeScoreEntryPage {
   private fb = inject(FormBuilder);
   private http = inject(HttpClient);
   private router = inject(Router);
+  private route = inject(ActivatedRoute);
+
+  // Where to return after saving/cancelling — '/results' if we came from there, else '/referee'.
+  protected returnUrl = this.route.snapshot.queryParamMap.get('from') === 'results' ? '/results' : '/referee';
 
   data = toSignal(injectLoad<typeof load>());
   pairing = computed(() => this.data()?.pairing ?? null);
@@ -188,8 +192,8 @@ export default class RefereeScoreEntryPage {
 
       await firstValueFrom(this.http.post('/api/gamepoints', payload));
 
-      // Navigate back to overview upon success
-      this.router.navigate(['/referee']);
+      // Navigate back to wherever we came from upon success
+      this.router.navigateByUrl(this.returnUrl);
     } catch (err) {
       console.error('Failed to save score', err);
     } finally {

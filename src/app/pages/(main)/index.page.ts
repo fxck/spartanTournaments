@@ -72,25 +72,21 @@ type ActivePairing = Awaited<ReturnType<typeof load>>[number];
           </span>
         </div>
 
-        <div class="flex items-center justify-between gap-4">
-          <div class="flex-1 text-center">
-            <div
-              class="font-bold text-lg"
-              [class.text-muted-foreground]="!pairing.competitor1?.id"
-              [class.italic]="!pairing.competitor1?.id"
-            >
-              {{ pairing.competitor1?.name ?? 'Offen' }}
-            </div>
+        <div class="flex flex-col items-center gap-2">
+          <div
+            class="w-full text-center font-bold text-lg leading-tight break-words"
+            [class.text-muted-foreground]="!pairing.competitor1?.id"
+            [class.italic]="!pairing.competitor1?.id"
+          >
+            {{ pairing.competitor1?.name ?? 'Offen' }}
           </div>
-          <div class="text-2xl font-black text-muted-foreground/30 italic">VS</div>
-          <div class="flex-1 text-center">
-            <div
-              class="font-bold text-lg"
-              [class.text-muted-foreground]="!pairing.competitor2?.id"
-              [class.italic]="!pairing.competitor2?.id"
-            >
-              {{ pairing.competitor2?.name ?? 'Offen' }}
-            </div>
+          <div class="text-sm font-black uppercase tracking-widest text-muted-foreground/40 italic">vs</div>
+          <div
+            class="w-full text-center font-bold text-lg leading-tight break-words"
+            [class.text-muted-foreground]="!pairing.competitor2?.id"
+            [class.italic]="!pairing.competitor2?.id"
+          >
+            {{ pairing.competitor2?.name ?? 'Offen' }}
           </div>
         </div>
 

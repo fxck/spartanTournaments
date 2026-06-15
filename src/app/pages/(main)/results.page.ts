@@ -1,4 +1,5 @@
-import { Component, computed, ChangeDetectionStrategy } from '@angular/core';
+import { Component, computed, afterRenderEffect, ChangeDetectionStrategy } from '@angular/core';
+import { DatePipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { HlmTableImports } from '@spartan-ng/helm/table';
 import { HlmButton } from '@spartan-ng/helm/button';
@@ -9,7 +10,7 @@ import type { load } from './results.server';
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-results',
-  imports: [RouterLink, ...HlmTableImports, HlmButton],
+  imports: [DatePipe, RouterLink, ...HlmTableImports, HlmButton],
   template: `
     <div class="space-y-8">
       <header>
@@ -20,9 +21,27 @@ import type { load } from './results.server';
       <!-- Mobile: Karten (Namen untereinander mit eigenem Punktestand) -->
       <div class="space-y-3 md:hidden">
         @for (p of results(); track p.id) {
-          <div class="border rounded-lg p-4 shadow-sm">
-            <div class="flex items-center justify-between gap-2 mb-3">
-              <span class="font-mono text-xs text-muted-foreground">#{{ p.gamenumber > 0 ? p.gamenumber : '-' }}</span>
+          <div
+            [id]="p.id === firstOpenId() ? 'first-open-m' : null"
+            class="border rounded-xl shadow-sm overflow-hidden bg-card"
+          >
+            <!-- Header band: court + time, plus score entry action -->
+            <div class="flex items-center justify-between gap-2 border-b bg-muted/30 px-4 py-2.5">
+              <span class="flex items-center gap-2 min-w-0">
+                <span class="text-sm font-bold text-primary leading-none truncate">Court {{ p.court }}</span>
+                <span class="flex items-center gap-1 text-muted-foreground shrink-0">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="h-4 w-4"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <span class="text-sm font-bold tabular-nums leading-none">{{ p.startTime | date: 'HH:mm' }}</span>
+                </span>
+              </span>
               @if (
                 canEdit() &&
                 p.competitor1 &&
@@ -37,19 +56,20 @@ import type { load } from './results.server';
                   variant="outline"
                   size="sm"
                   [routerLink]="['/referee', p.id]"
-                  class="-mr-2 h-7 font-black tabular-nums"
+                  [queryParams]="{ from: 'results' }"
+                  class="-mr-1 h-7 font-black tabular-nums shrink-0"
                 >
                   {{ p.points ? p.points.competitor1Points + ':' + p.points.competitor2Points : 'Eintragen' }}
                 </a>
               }
             </div>
-            <div class="space-y-2">
+            <div class="relative px-4 py-4 space-y-2">
               <div class="flex items-baseline justify-between gap-3">
                 @if (p.competitor1 && p.competitor1.id && p.competitor1.id > 0) {
                   <a
                     [routerLink]="['/competitor', p.competitor1.id]"
                     class="min-w-0 break-words hover:underline hover:text-primary transition-colors"
-                    [class.font-bold]="p.points?.competitor1Points > p.points?.competitor2Points"
+                    [class.font-bold]="!!p.points && p.points.competitor1Points > p.points.competitor2Points"
                   >
                     {{ p.competitor1.name }}
                   </a>
@@ -65,7 +85,7 @@ import type { load } from './results.server';
                   <a
                     [routerLink]="['/competitor', p.competitor2.id]"
                     class="min-w-0 break-words hover:underline hover:text-primary transition-colors"
-                    [class.font-bold]="p.points?.competitor2Points > p.points?.competitor1Points"
+                    [class.font-bold]="!!p.points && p.points.competitor2Points > p.points.competitor1Points"
                   >
                     {{ p.competitor2.name }}
                   </a>
@@ -76,6 +96,9 @@ import type { load } from './results.server';
                   p.points ? p.points.competitor2Points : '–'
                 }}</span>
               </div>
+              <span class="absolute bottom-1 right-2 font-mono text-[10px] text-muted-foreground/40"
+                >#{{ p.gamenumber > 0 ? p.gamenumber : '-' }}</span
+              >
             </div>
           </div>
         } @empty {
@@ -95,7 +118,7 @@ import type { load } from './results.server';
           </thead>
           <tbody hlmTBody>
             @for (p of results(); track p.id) {
-              <tr hlmTr>
+              <tr hlmTr [id]="p.id === firstOpenId() ? 'first-open-d' : null">
                 <td hlmTd class="w-16 text-muted-foreground font-mono">{{ p.gamenumber > 0 ? p.gamenumber : '-' }}</td>
                 <td hlmTd>
                   <div class="flex items-center gap-4">
@@ -103,7 +126,7 @@ import type { load } from './results.server';
                       <a
                         [routerLink]="['/competitor', p.competitor1.id]"
                         class="flex-1 text-right hover:underline hover:text-primary transition-colors"
-                        [class.font-bold]="p.points?.competitor1Points > p.points?.competitor2Points"
+                        [class.font-bold]="!!p.points && p.points.competitor1Points > p.points.competitor2Points"
                       >
                         {{ p.competitor1.name }}
                       </a>
@@ -115,7 +138,7 @@ import type { load } from './results.server';
                       <a
                         [routerLink]="['/competitor', p.competitor2.id]"
                         class="flex-1 hover:underline hover:text-primary transition-colors"
-                        [class.font-bold]="p.points?.competitor2Points > p.points?.competitor1Points"
+                        [class.font-bold]="!!p.points && p.points.competitor2Points > p.points.competitor1Points"
                       >
                         {{ p.competitor2.name }}
                       </a>
@@ -139,6 +162,7 @@ import type { load } from './results.server';
                       variant="outline"
                       size="sm"
                       [routerLink]="['/referee', p.id]"
+                      [queryParams]="{ from: 'results' }"
                       class="shadow-sm font-black text-base tabular-nums"
                     >
                       @if (p.points) {
@@ -186,4 +210,25 @@ export default class ResultsPage {
       points: gps.find((g) => g.pairingID === p.id),
     }));
   });
+
+  // First game that has no result entered yet — used as the scroll anchor on load.
+  firstOpenId = computed(() => this.results().find((p) => !p.points)?.id ?? null);
+
+  private hasScrolled = false;
+
+  constructor() {
+    // Scroll to the first open game once, after the rows have rendered.
+    afterRenderEffect(() => {
+      if (this.hasScrolled || this.firstOpenId() === null) return;
+      // Both layouts render the anchor; scroll to whichever is currently visible.
+      const el =
+        [document.getElementById('first-open-d'), document.getElementById('first-open-m')].find(
+          (e) => e && e.offsetParent !== null,
+        ) ?? null;
+      if (el) {
+        this.hasScrolled = true;
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    });
+  }
 }
