@@ -1,12 +1,13 @@
-import { defineEventHandler, readBody, createError } from 'h3';
+import { defineEventHandler, createError } from 'h3';
 import bcrypt from 'bcryptjs';
 import { db, tournamentDetails } from '../../../db';
+import { parseBody, tournamentSetupBody } from '../../../validation';
 
 export default defineEventHandler(async (event) => {
   const existing = await db.query.tournamentDetails.findMany({ limit: 1 });
   if (existing.length > 0) throw createError({ statusCode: 409, statusMessage: 'Tournament already configured' });
 
-  const body = await readBody(event);
+  const body = await parseBody(event, tournamentSetupBody);
   const adminPasswordHash = await bcrypt.hash(body.adminPassword, 12);
   const refereePasswordHash = await bcrypt.hash(body.refereePassword, 12);
 
@@ -18,8 +19,8 @@ export default defineEventHandler(async (event) => {
       minutesPerGame: body.minutesPerGame,
       minutesAvailForGroupsPhase: body.minutesAvailForGroupsPhase,
       finalistCount: body.finalistCount,
-      tournamentStartTime: new Date(body.tournamentStartTime),
-      finalsStartTime: new Date(body.finalsStartTime),
+      tournamentStartTime: body.tournamentStartTime,
+      finalsStartTime: body.finalsStartTime,
       adminPasswordHash,
       refereePasswordHash,
     })

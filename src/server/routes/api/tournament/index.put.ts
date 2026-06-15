@@ -1,14 +1,15 @@
-import { defineEventHandler, readBody } from 'h3';
+import { defineEventHandler } from 'h3';
 import bcrypt from 'bcryptjs';
 import { db, tournamentDetails } from '../../../db';
 import { requireAdmin } from '../../../session';
+import { parseBody, tournamentUpdateBody } from '../../../validation';
 
 export default defineEventHandler(async (event) => {
   await requireAdmin(event);
   const [existing] = await db.query.tournamentDetails.findMany({ limit: 1 });
   if (!existing) return null;
 
-  const body = await readBody(event);
+  const body = await parseBody(event, tournamentUpdateBody);
   const adminPasswordHash = body.newAdminPassword
     ? await bcrypt.hash(body.newAdminPassword, 12)
     : existing.adminPasswordHash;
@@ -22,8 +23,8 @@ export default defineEventHandler(async (event) => {
     minutesPerGame: body.minutesPerGame,
     minutesAvailForGroupsPhase: body.minutesAvailForGroupsPhase,
     finalistCount: body.finalistCount,
-    tournamentStartTime: new Date(body.tournamentStartTime),
-    finalsStartTime: new Date(body.finalsStartTime),
+    tournamentStartTime: body.tournamentStartTime,
+    finalsStartTime: body.finalsStartTime,
     adminPasswordHash,
     refereePasswordHash,
   });

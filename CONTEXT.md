@@ -76,3 +76,5 @@ No global AppState service. Data loading uses Analog-native patterns:
 
 ## API Layer
 Nitro Routes in `server/routes/api/`. No tRPC. Type safety via Zod validation in each handler + shared TypeScript types for request/response shapes. Auth enforced per-route via `requireSession()` helper.
+
+Request shapes are validated at the edge through the validation seam in `server/validation/`: named Zod schemas in `schemas.ts`, applied via the `parseBody` / `parseParams` / `parseQuery` helpers in `parse.ts` (each throws a 400 on mismatch). Schemas cover **shape only** — DB-dependent rules (name uniqueness, drawNumber clashes, "already configured") stay in the handlers/modules that own the data.

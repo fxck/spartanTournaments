@@ -1,11 +1,11 @@
-import { defineEventHandler, readBody, createError } from 'h3';
+import { defineEventHandler, createError } from 'h3';
 import bcrypt from 'bcryptjs';
 import { db } from '../../../db';
 import { getSession } from '../../../session';
+import { parseBody, loginBody } from '../../../validation';
 
 export default defineEventHandler(async (event) => {
-  const { password } = await readBody<{ password: string }>(event);
-  if (!password) throw createError({ statusCode: 400, statusMessage: 'Password required' });
+  const { password } = await parseBody(event, loginBody);
 
   const [details] = await db.query.tournamentDetails.findMany({ limit: 1 });
   if (!details) throw createError({ statusCode: 404, statusMessage: 'No tournament configured' });

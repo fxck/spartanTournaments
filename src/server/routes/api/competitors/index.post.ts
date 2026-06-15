@@ -1,10 +1,11 @@
-import { defineEventHandler, readBody, createError } from 'h3';
+import { defineEventHandler, createError } from 'h3';
 import { db, competitors } from '../../../db';
 import { requireAdmin } from '../../../session';
+import { parseBody, competitorCreateBody } from '../../../validation';
 
 export default defineEventHandler(async (event) => {
   await requireAdmin(event);
-  const body = await readBody<{ name?: string; names?: string[] }>(event);
+  const body = await parseBody(event, competitorCreateBody);
 
   // Existing names, lowercased, for case-insensitive duplicate detection.
   const existing = await db.select({ name: competitors.name }).from(competitors);

@@ -1,27 +1,16 @@
-import { defineEventHandler, getRouterParam, readBody, createError } from 'h3';
+import { defineEventHandler, createError } from 'h3';
 import { and, eq, ne } from 'drizzle-orm';
 import { db, competitors } from '../../../db';
 import { requireAdmin } from '../../../session';
+import { parseParams, parseBody, idParam, competitorUpdateBody } from '../../../validation';
 
 export default defineEventHandler(async (event) => {
   await requireAdmin(event);
-  const id = Number(getRouterParam(event, 'id'));
-  if (!id) throw createError({ statusCode: 400, statusMessage: 'Invalid id' });
+  const { id } = parseParams(event, idParam);
+  const { name, drawNumber } = await parseBody(event, competitorUpdateBody);
 
-  const body = await readBody<{ name?: string; drawNumber?: number | null }>(event);
-
-  const name = body.name?.trim();
-  if (!name) throw createError({ statusCode: 400, statusMessage: 'Name required' });
-
-  // drawNumber is optional: null/undefined clears it, otherwise it must be a positive integer.
-  let drawNumber: number | null = null;
-  if (body.drawNumber != null && `${body.drawNumber}`.trim() !== '') {
-    drawNumber = Number(body.drawNumber);
-    if (!Number.isInteger(drawNumber) || drawNumber < 1) {
-      throw createError({ statusCode: 400, statusMessage: 'Invalid draw number' });
-    }
-
-    // A draw number identifies a competitor in the bracket, so it must stay unique.
+  // A draw number identifies a competitor in the bracket, so it must stay unique.
+  if (drawNumber != null) {
     const [clash] = await db
       .select({ id: competitors.id })
       .from(competitors)
