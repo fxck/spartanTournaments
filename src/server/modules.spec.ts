@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { TournamentStandings } from './tournament-standings';
 import { TournamentEngine } from './tournament-engine';
 import { MatchRegistry } from './match-registry';
+import { CompetitorRegistry } from './competitor-registry';
 import { db } from './db';
 import { competitors, pairings, gamePoints } from './db/schema';
 
@@ -291,5 +292,75 @@ describe('TournamentEngine', () => {
     expect(advance).toHaveBeenCalledWith(db);
     expect(res).toEqual({ ok: true });
     advance.mockRestore();
+  });
+});
+
+describe('CompetitorRegistry', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('importNames trims, skips blanks, intra-batch dupes and already-taken names', async () => {
+    // Existing competitor "Alice" → "alice" is taken.
+    db.select = vi.fn().mockReturnValue({
+      from: vi.fn().mockResolvedValue([{ name: 'Alice' }]),
+    });
+    const inserted = [{ id: 1, name: 'Bob' }];
+    db.insert = vi.fn().mockReturnValue({
+      values: vi.fn().mockReturnValue({ returning: vi.fn().mockResolvedValue(inserted) }),
+    });
+
+    const { created, skipped } = await CompetitorRegistry.importNames(['Bob', 'alice', '   ', 'Bob']);
+
+    expect(created).toEqual(inserted);
+    expect(skipped).toEqual(['alice', 'Bob']); // already-taken, then intra-batch dupe
+  });
+
+  it('importNames inserts nothing when every name is blank or duplicate', async () => {
+    db.select = vi.fn().mockReturnValue({ from: vi.fn().mockResolvedValue([{ name: 'Alice' }]) });
+    db.insert = vi.fn();
+
+    const { created, skipped } = await CompetitorRegistry.importNames(['  ', 'Alice']);
+
+    expect(created).toEqual([]);
+    expect(skipped).toEqual(['Alice']);
+    expect(db.insert).not.toHaveBeenCalled();
+  });
+
+  it('update reports a draw-number clash without writing', async () => {
+    db.select = vi.fn().mockReturnValue({
+      from: vi.fn().mockReturnValue({ where: vi.fn().mockResolvedValue([{ id: 99 }]) }),
+    });
+    db.update = vi.fn();
+
+    const result = await CompetitorRegistry.update(5, 'Bob', 3);
+
+    expect(result).toEqual({ status: 'drawNumberClash', drawNumber: 3 });
+    expect(db.update).not.toHaveBeenCalled();
+  });
+
+  it('update returns notFound when no row is updated', async () => {
+    db.update = vi.fn().mockReturnValue({
+      set: vi.fn().mockReturnValue({
+        where: vi.fn().mockReturnValue({ returning: vi.fn().mockResolvedValue([]) }),
+      }),
+    });
+
+    const result = await CompetitorRegistry.update(5, 'Bob', null);
+
+    expect(result).toEqual({ status: 'notFound' });
+  });
+
+  it('update returns the updated competitor on success', async () => {
+    const updated = { id: 5, name: 'Bob', drawNumber: null };
+    db.update = vi.fn().mockReturnValue({
+      set: vi.fn().mockReturnValue({
+        where: vi.fn().mockReturnValue({ returning: vi.fn().mockResolvedValue([updated]) }),
+      }),
+    });
+
+    const result = await CompetitorRegistry.update(5, 'Bob', null);
+
+    expect(result).toEqual({ status: 'updated', competitor: updated });
   });
 });

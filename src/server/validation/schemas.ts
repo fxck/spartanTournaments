@@ -71,6 +71,10 @@ export const competitorUpdateBody = z.object({
   // null / '' / absent clears the draw number; otherwise a positive integer.
   drawNumber: z.preprocess(
     (v) => (v === '' || v == null ? null : v),
-    z.coerce.number({ message: 'Invalid draw number' }).int('Invalid draw number').positive('Invalid draw number').nullable(),
+    z.coerce
+      .number({ message: 'Invalid draw number' })
+      .int('Invalid draw number')
+      .positive('Invalid draw number')
+      .nullable(),
   ),
 });

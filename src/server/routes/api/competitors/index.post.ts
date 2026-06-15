@@ -1,51 +1,26 @@
 import { defineEventHandler, createError } from 'h3';
-import { db, competitors } from '../../../db';
 import { requireAdmin } from '../../../session';
+import { CompetitorRegistry } from '../../../competitor-registry';
 import { parseBody, competitorCreateBody } from '../../../validation';
 
 export default defineEventHandler(async (event) => {
   await requireAdmin(event);
   const body = await parseBody(event, competitorCreateBody);
 
-  // Existing names, lowercased, for case-insensitive duplicate detection.
-  const existing = await db.select({ name: competitors.name }).from(competitors);
-  const taken = new Set(existing.map((c) => c.name.trim().toLowerCase()));
-
-  // Bulk import: accept a list of names (e.g. pasted one-per-line from the admin UI).
-  if (Array.isArray(body?.names)) {
-    const seen = new Set<string>();
-    const fresh: string[] = [];
-    const skipped: string[] = [];
-    for (const raw of body.names) {
-      const name = raw?.trim();
-      if (!name) continue;
-      const key = name.toLowerCase();
-      // Skip names that already exist or are duplicated within this batch.
-      if (taken.has(key) || seen.has(key)) {
-        skipped.push(name);
-        continue;
-      }
-      seen.add(key);
-      fresh.push(name);
-    }
-    if (fresh.length === 0 && skipped.length === 0) {
+  // Bulk import: a list of names (e.g. pasted one-per-line from the admin UI).
+  if (Array.isArray(body.names)) {
+    const { created, skipped } = await CompetitorRegistry.importNames(body.names);
+    if (created.length === 0 && skipped.length === 0) {
       throw createError({ statusCode: 400, statusMessage: 'No names provided' });
     }
-    const created = fresh.length
-      ? await db
-          .insert(competitors)
-          .values(fresh.map((name) => ({ name })))
-          .returning()
-      : [];
     return { created, skipped };
   }
 
-  const name = body?.name?.trim();
-  if (!name) throw createError({ statusCode: 400, statusMessage: 'Name required' });
-  if (taken.has(name.toLowerCase())) {
-    throw createError({ statusCode: 409, statusMessage: `Teilnehmer "${name}" existiert bereits` });
+  // Single name: same dedup, mapped to single-result HTTP semantics.
+  const { created, skipped } = await CompetitorRegistry.importNames([body.name ?? '']);
+  if (created.length) return created[0];
+  if (skipped.length) {
+    throw createError({ statusCode: 409, statusMessage: `Teilnehmer "${skipped[0]}" existiert bereits` });
   }
-
-  const [created] = await db.insert(competitors).values({ name }).returning();
-  return created;
+  throw createError({ statusCode: 400, statusMessage: 'Name required' });
 });

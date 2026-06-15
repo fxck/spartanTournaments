@@ -69,11 +69,7 @@ describe('input schemas', () => {
         competitor2Points: 7,
       });
     });
-    it.each([
-      { competitor1Points: -1 },
-      { competitor2Points: 1.5 },
-      { pairingID: 0 },
-    ])('rejects %o', (override) => {
+    it.each([{ competitor1Points: -1 }, { competitor2Points: 1.5 }, { pairingID: 0 }])('rejects %o', (override) => {
       expect(
         gamePointBody.safeParse({ pairingID: 1, competitor1Points: 2, competitor2Points: 3, ...override }).success,
       ).toBe(false);
