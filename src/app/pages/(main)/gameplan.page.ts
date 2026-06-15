@@ -24,10 +24,7 @@ type PairingRow = Awaited<ReturnType<typeof load>>[number];
       <!-- Mobile: Karten-Ansicht (Namen untereinander, brechen sauber um) -->
       <div class="space-y-3 md:hidden">
         @for (p of pairings(); track p.id) {
-          <div
-            class="border rounded-xl shadow-sm overflow-hidden"
-            [class]="p.groupID < 0 ? 'bg-primary/5' : 'bg-card'"
-          >
+          <div class="border rounded-xl shadow-sm overflow-hidden" [class]="p.groupID < 0 ? 'bg-primary/5' : 'bg-card'">
             <!-- Header band: phase/group, court, time -->
             <div class="flex items-center justify-between gap-2 border-b bg-muted/30 px-4 py-2.5">
               <span class="flex items-center gap-2 min-w-0">
@@ -49,7 +46,12 @@ type PairingRow = Awaited<ReturnType<typeof load>>[number];
                   viewBox="0 0 24 24"
                   stroke="currentColor"
                 >
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
                 </svg>
                 <span class="text-sm font-bold tabular-nums leading-none">{{ p.startTime | date: 'HH:mm' }}</span>
               </span>

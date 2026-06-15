@@ -165,9 +165,9 @@ describe('TournamentStandings', () => {
     });
     db.select = vi.fn(() => ({ from: fromSpy })) as unknown as typeof db.select;
 
-    const preloaded = [
-      { id: 100, pairingID: 10, competitor1Points: 5, competitor2Points: 3 },
-    ] as unknown as Parameters<typeof TournamentStandings.getGroupsStandings>[2];
+    const preloaded = [{ id: 100, pairingID: 10, competitor1Points: 5, competitor2Points: 3 }] as unknown as Parameters<
+      typeof TournamentStandings.getGroupsStandings
+    >[2];
     const standings = await TournamentStandings.getGroupsStandings(db, 0, preloaded);
 
     const alice = standings[0].competitors.find((c) => c.id === 1);

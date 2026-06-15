@@ -1,5 +1,5 @@
 import {
-  Component ,
+  Component,
   inject as ngInject,
   signal,
   effect,
@@ -89,7 +89,12 @@ interface Competitor {
               <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div class="grid gap-2">
                   <label hlmLabel for="minutesAvailForGroupsPhase">Minuten für Gruppenphase</label>
-                  <input hlmInput id="minutesAvailForGroupsPhase" type="number" formControlName="minutesAvailForGroupsPhase" />
+                  <input
+                    hlmInput
+                    id="minutesAvailForGroupsPhase"
+                    type="number"
+                    formControlName="minutesAvailForGroupsPhase"
+                  />
                 </div>
                 <div class="grid gap-2">
                   <label hlmLabel for="finalistCount">Anzahl Finalisten</label>
@@ -100,7 +105,12 @@ interface Competitor {
               <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div class="grid gap-2">
                   <label hlmLabel for="tournamentStartTime">Turnier Startzeit</label>
-                  <input hlmInput id="tournamentStartTime" type="datetime-local" formControlName="tournamentStartTime" />
+                  <input
+                    hlmInput
+                    id="tournamentStartTime"
+                    type="datetime-local"
+                    formControlName="tournamentStartTime"
+                  />
                 </div>
                 <div class="grid gap-2">
                   <label hlmLabel for="finalsStartTime">Finals Startzeit</label>
@@ -111,11 +121,23 @@ interface Competitor {
               <div class="grid grid-cols-1 md:grid-cols-2 gap-4 border-t pt-4">
                 <div class="grid gap-2">
                   <label hlmLabel for="adminPassword">Neues Admin Passwort</label>
-                  <input hlmInput id="adminPassword" type="password" formControlName="adminPassword" placeholder="Unverändert lassen..." />
+                  <input
+                    hlmInput
+                    id="adminPassword"
+                    type="password"
+                    formControlName="adminPassword"
+                    placeholder="Unverändert lassen..."
+                  />
                 </div>
                 <div class="grid gap-2">
                   <label hlmLabel for="refereePassword">Neues Schiedsrichter Passwort</label>
-                  <input hlmInput id="refereePassword" type="password" formControlName="refereePassword" placeholder="Unverändert lassen..." />
+                  <input
+                    hlmInput
+                    id="refereePassword"
+                    type="password"
+                    formControlName="refereePassword"
+                    placeholder="Unverändert lassen..."
+                  />
                 </div>
               </div>
 
@@ -135,9 +157,13 @@ interface Competitor {
               <h2 hlmCardTitle>Teilnehmer</h2>
               <p hlmCardDescription>Füge neue Boccia-Spieler oder Teams hinzu und verwalte sie.</p>
             </header>
-            
+
             <div hlmCardContent class="space-y-6">
-              <form #addForm="ngForm" (ngSubmit)="addCompetitor(newCompetitorName.value); newCompetitorName.value = ''" class="flex gap-2">
+              <form
+                #addForm="ngForm"
+                (ngSubmit)="addCompetitor(newCompetitorName.value); newCompetitorName.value = ''"
+                class="flex gap-2"
+              >
                 <div class="flex-1">
                   <input hlmInput #newCompetitorName placeholder="Name des Teilnehmers..." required />
                 </div>
@@ -145,7 +171,11 @@ interface Competitor {
               </form>
 
               <div class="border-t pt-4 space-y-2">
-                <button type="button" class="text-sm font-medium text-muted-foreground hover:text-foreground" (click)="bulkOpen.set(!bulkOpen())">
+                <button
+                  type="button"
+                  class="text-sm font-medium text-muted-foreground hover:text-foreground"
+                  (click)="bulkOpen.set(!bulkOpen())"
+                >
                   {{ bulkOpen() ? '▾' : '▸' }} Mehrere Teilnehmer importieren
                 </button>
                 @if (bulkOpen()) {
@@ -167,28 +197,38 @@ interface Competitor {
               </div>
 
               @if (competitors().length === 0) {
-                <div class="text-center py-8 text-muted-foreground">
-                  Keine Teilnehmer registriert.
-                </div>
+                <div class="text-center py-8 text-muted-foreground">Keine Teilnehmer registriert.</div>
               } @else {
                 <div hlmTableContainer>
                   <table hlmTable>
                     <thead hlmThead>
                       <tr hlmTr>
                         <th hlmTh class="w-16">
-                          <button type="button" class="flex items-center gap-1 font-medium hover:text-foreground" (click)="toggleSort('id')">
+                          <button
+                            type="button"
+                            class="flex items-center gap-1 font-medium hover:text-foreground"
+                            (click)="toggleSort('id')"
+                          >
                             ID
                             <span class="text-muted-foreground">{{ sortIndicator('id') }}</span>
                           </button>
                         </th>
                         <th hlmTh>
-                          <button type="button" class="flex items-center gap-1 font-medium hover:text-foreground" (click)="toggleSort('name')">
+                          <button
+                            type="button"
+                            class="flex items-center gap-1 font-medium hover:text-foreground"
+                            (click)="toggleSort('name')"
+                          >
                             Name
                             <span class="text-muted-foreground">{{ sortIndicator('name') }}</span>
                           </button>
                         </th>
                         <th hlmTh class="w-24">
-                          <button type="button" class="flex items-center gap-1 font-medium hover:text-foreground" (click)="toggleSort('drawNumber')">
+                          <button
+                            type="button"
+                            class="flex items-center gap-1 font-medium hover:text-foreground"
+                            (click)="toggleSort('drawNumber')"
+                          >
                             Losnr.
                             <span class="text-muted-foreground">{{ sortIndicator('drawNumber') }}</span>
                           </button>
@@ -205,10 +245,20 @@ interface Competitor {
                               <input hlmInput [(ngModel)]="editName" [name]="'editName' + c.id" class="h-8" />
                             </td>
                             <td hlmTd>
-                              <input hlmInput type="number" min="1" [(ngModel)]="editDrawNumber" [name]="'editDraw' + c.id" placeholder="—" class="h-8 w-20" />
+                              <input
+                                hlmInput
+                                type="number"
+                                min="1"
+                                [(ngModel)]="editDrawNumber"
+                                [name]="'editDraw' + c.id"
+                                placeholder="—"
+                                class="h-8 w-20"
+                              />
                             </td>
                             <td hlmTd class="text-right whitespace-nowrap">
-                              <button hlmBtn size="sm" [disabled]="loading()" (click)="saveCompetitor(c.id)">Speichern</button>
+                              <button hlmBtn size="sm" [disabled]="loading()" (click)="saveCompetitor(c.id)">
+                                Speichern
+                              </button>
                               <button hlmBtn variant="ghost" size="sm" (click)="cancelEdit()">Abbrechen</button>
                             </td>
                           } @else {
@@ -216,8 +266,12 @@ interface Competitor {
                             <td hlmTd>{{ c.name }}</td>
                             <td hlmTd>{{ c.drawNumber ?? '—' }}</td>
                             <td hlmTd class="text-right whitespace-nowrap">
-                              <button hlmBtn variant="outline" size="sm" [disabled]="loading()" (click)="startEdit(c)">Bearbeiten</button>
-                              <button hlmBtn variant="destructive" size="sm" (click)="deleteCompetitor(c.id)">Löschen</button>
+                              <button hlmBtn variant="outline" size="sm" [disabled]="loading()" (click)="startEdit(c)">
+                                Bearbeiten
+                              </button>
+                              <button hlmBtn variant="destructive" size="sm" (click)="deleteCompetitor(c.id)">
+                                Löschen
+                              </button>
                             </td>
                           }
                         </tr>
@@ -241,47 +295,76 @@ interface Competitor {
               <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between p-4 border rounded-lg">
                 <div class="space-y-1">
                   <h3 class="font-semibold">Auslosung</h3>
-                  <p class="text-sm text-muted-foreground">Teilt alle registrierten Teilnehmer zufällig in Gruppen auf.</p>
+                  <p class="text-sm text-muted-foreground">
+                    Teilt alle registrierten Teilnehmer zufällig in Gruppen auf.
+                  </p>
                 </div>
-                <button hlmBtn variant="outline" [disabled]="loading()" (click)="action('random-draw')">Zufällige Auslosung</button>
+                <button hlmBtn variant="outline" [disabled]="loading()" (click)="action('random-draw')">
+                  Zufällige Auslosung
+                </button>
               </div>
 
               <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between p-4 border rounded-lg">
                 <div class="space-y-1">
                   <h3 class="font-semibold">Turnierspiele generieren</h3>
-                  <p class="text-sm text-muted-foreground">Erstellt den Spielplan für die Gruppenphase basierend auf der Auslosung.</p>
+                  <p class="text-sm text-muted-foreground">
+                    Erstellt den Spielplan für die Gruppenphase basierend auf der Auslosung.
+                  </p>
                 </div>
-                <button hlmBtn variant="outline" [disabled]="loading()" (click)="action('calc-tournament')">Spiele generieren</button>
+                <button hlmBtn variant="outline" [disabled]="loading()" (click)="action('calc-tournament')">
+                  Spiele generieren
+                </button>
               </div>
 
               <div class="flex flex-col md:flex-row md:items-center justify-between p-4 border rounded-lg gap-4">
                 <div class="space-y-1 flex-1">
                   <h3 class="font-semibold">Spiele verschieben</h3>
-                  <p class="text-sm text-muted-foreground">Verschiebt die Startzeit aller noch nicht gespielten Spiele ab einer Spielnummer um die angegebenen Minuten. Negative Werte ziehen die Spiele vor (z.B. um eine Fehleingabe zu korrigieren).</p>
+                  <p class="text-sm text-muted-foreground">
+                    Verschiebt die Startzeit aller noch nicht gespielten Spiele ab einer Spielnummer um die angegebenen
+                    Minuten. Negative Werte ziehen die Spiele vor (z.B. um eine Fehleingabe zu korrigieren).
+                  </p>
                 </div>
                 <div class="flex flex-wrap items-center gap-2">
                   <span class="text-sm text-muted-foreground font-medium">ab Nr.</span>
                   <input hlmInput type="number" #fromGame min="1" placeholder="alle" class="w-20 text-center" />
                   <input hlmInput type="number" #delayMinutes value="15" class="w-20 text-center" />
                   <span class="text-sm text-muted-foreground font-medium">Min.</span>
-                  <button hlmBtn variant="outline" [disabled]="loading()" (click)="postponeGames(fromGame.value, delayMinutes.value)">Verschieben</button>
+                  <button
+                    hlmBtn
+                    variant="outline"
+                    [disabled]="loading()"
+                    (click)="postponeGames(fromGame.value, delayMinutes.value)"
+                  >
+                    Verschieben
+                  </button>
                 </div>
               </div>
 
-              <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between p-4 border border-destructive/20 bg-destructive/5 rounded-lg">
+              <div
+                class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between p-4 border border-destructive/20 bg-destructive/5 rounded-lg"
+              >
                 <div class="space-y-1">
                   <h3 class="font-semibold text-destructive">Gruppenphase beenden & Finals ausrechnen</h3>
-                  <p class="text-sm text-muted-foreground">Berechnet die Tabellen und generiert den Final-Spielplan (Halbfinale, Finale etc.).</p>
+                  <p class="text-sm text-muted-foreground">
+                    Berechnet die Tabellen und generiert den Final-Spielplan (Halbfinale, Finale etc.).
+                  </p>
                 </div>
-                <button hlmBtn variant="destructive" [disabled]="loading()" (click)="action('calc-finals')">Finalspiele berechnen</button>
+                <button hlmBtn variant="destructive" [disabled]="loading()" (click)="action('calc-finals')">
+                  Finalspiele berechnen
+                </button>
               </div>
 
               <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between p-4 border rounded-lg">
                 <div class="space-y-1">
                   <h3 class="font-semibold">Nächste Finalrunde berechnen</h3>
-                  <p class="text-sm text-muted-foreground">Ermittelt die Sieger der aktuellen Finalrunde und erstellt die Paarungen der nächsten Runde. Kann erneut gedrückt werden, ohne Spiele zu duplizieren.</p>
+                  <p class="text-sm text-muted-foreground">
+                    Ermittelt die Sieger der aktuellen Finalrunde und erstellt die Paarungen der nächsten Runde. Kann
+                    erneut gedrückt werden, ohne Spiele zu duplizieren.
+                  </p>
                 </div>
-                <button hlmBtn variant="outline" [disabled]="loading()" (click)="action('calc-next-final-round')">Nächste Runde berechnen</button>
+                <button hlmBtn variant="outline" [disabled]="loading()" (click)="action('calc-next-final-round')">
+                  Nächste Runde berechnen
+                </button>
               </div>
             </div>
           </section>
@@ -317,7 +400,9 @@ export default class AdminPage {
       if (av == null) return 1;
       if (bv == null) return -1;
       const cmp =
-        typeof av === 'string' ? String(av).localeCompare(String(bv), 'de', { sensitivity: 'base' }) : Number(av) - Number(bv);
+        typeof av === 'string'
+          ? String(av).localeCompare(String(bv), 'de', { sensitivity: 'base' })
+          : Number(av) - Number(bv);
       return cmp * dir;
     });
   });

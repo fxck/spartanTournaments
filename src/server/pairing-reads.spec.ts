@@ -41,7 +41,10 @@ function makeTx(rows: unknown[] = []) {
     select: vi.fn(() => builder),
     query: { tournamentDetails: { findMany: vi.fn() } },
   };
-  return { tx: tx as unknown as DbOrTx & { query: { tournamentDetails: { findMany: ReturnType<typeof vi.fn> } } }, calls };
+  return {
+    tx: tx as unknown as DbOrTx & { query: { tournamentDetails: { findMany: ReturnType<typeof vi.fn> } } },
+    calls,
+  };
 }
 
 describe('PairingReads.findPairings', () => {

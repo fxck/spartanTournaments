@@ -38,7 +38,12 @@ import { getPhaseName } from '../../shared/phase-name';
                     viewBox="0 0 24 24"
                     stroke="currentColor"
                   >
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
                   </svg>
                   <span class="text-sm font-bold tabular-nums leading-none">{{ p.startTime | date: 'HH:mm' }}</span>
                 </span>
@@ -120,9 +125,9 @@ import { getPhaseName } from '../../shared/phase-name';
           <tbody hlmTBody>
             @for (p of results(); track p.id) {
               <tr hlmTr [id]="p.id === firstOpenId() ? 'first-open-d' : null">
-                <td hlmTd class="w-16 text-muted-foreground" [class.font-mono]="p.round >= 0">{{
-                  p.round < 0 ? getPhaseName(p.round) : (p.gamenumber > 0 ? p.gamenumber : '-')
-                }}</td>
+                <td hlmTd class="w-16 text-muted-foreground" [class.font-mono]="p.round >= 0">
+                  {{ p.round < 0 ? getPhaseName(p.round) : p.gamenumber > 0 ? p.gamenumber : '-' }}
+                </td>
                 <td hlmTd>
                   <div class="flex items-center gap-4">
                     @if (p.competitor1 && p.competitor1.id && p.competitor1.id > 0) {
