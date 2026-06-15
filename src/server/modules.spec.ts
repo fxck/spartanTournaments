@@ -250,4 +250,46 @@ describe('TournamentEngine', () => {
     expect(db.select).toHaveBeenCalled();
     expect(db.update).toHaveBeenCalledTimes(2);
   });
+
+  it('recordResult advances the bracket for a finals pairing', async () => {
+    vi.spyOn(MatchRegistry, 'recordGamePoint').mockResolvedValue({ id: 1 } as never);
+    db.select = vi.fn().mockReturnValue({
+      from: vi.fn().mockReturnValue({ where: vi.fn().mockResolvedValue([{ id: 5, groupID: -1, round: -1 }]) }),
+    });
+    const advance = vi.spyOn(TournamentEngine, 'advanceFinalsRound').mockResolvedValue();
+
+    await TournamentEngine.recordResult(5, 3, 1);
+
+    expect(MatchRegistry.recordGamePoint).toHaveBeenCalledWith(db, 5, 3, 1);
+    expect(advance).toHaveBeenCalledWith(db);
+    advance.mockRestore();
+  });
+
+  it('recordResult does not advance the bracket for a groups pairing', async () => {
+    vi.spyOn(MatchRegistry, 'recordGamePoint').mockResolvedValue({ id: 1 } as never);
+    db.select = vi.fn().mockReturnValue({
+      from: vi.fn().mockReturnValue({ where: vi.fn().mockResolvedValue([{ id: 5, groupID: 2, round: 1 }]) }),
+    });
+    const advance = vi.spyOn(TournamentEngine, 'advanceFinalsRound').mockResolvedValue();
+
+    await TournamentEngine.recordResult(5, 3, 1);
+
+    expect(advance).not.toHaveBeenCalled();
+    advance.mockRestore();
+  });
+
+  it('deleteResult recomputes the bracket for a finals pairing', async () => {
+    const del = vi.spyOn(MatchRegistry, 'deleteGamePoint').mockResolvedValue({ ok: true });
+    db.select = vi.fn().mockReturnValue({
+      from: vi.fn().mockReturnValue({ where: vi.fn().mockResolvedValue([{ id: 5, groupID: -1, round: -2 }]) }),
+    });
+    const advance = vi.spyOn(TournamentEngine, 'advanceFinalsRound').mockResolvedValue();
+
+    const res = await TournamentEngine.deleteResult(5);
+
+    expect(del).toHaveBeenCalledWith(db, 5);
+    expect(advance).toHaveBeenCalledWith(db);
+    expect(res).toEqual({ ok: true });
+    advance.mockRestore();
+  });
 });

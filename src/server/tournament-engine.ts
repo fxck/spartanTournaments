@@ -1,6 +1,7 @@
 import { eq, inArray, lt } from 'drizzle-orm';
-import { db } from './db';
+import { db, type DbOrTx } from './db';
 import { competitors, pairings, gamePoints } from './db/schema';
+import { MatchRegistry } from './match-registry';
 import { TournamentStandings } from './tournament-standings';
 import {
   CalcMostGamesPerCompetitorPlan,
@@ -109,38 +110,71 @@ export class TournamentEngine {
     });
   }
 
-  static async advanceFinalsRound(): Promise<void> {
-    await db.transaction(async (tx) => {
-      const finalsPairings = (await tx.select().from(pairings)).filter(isFinals);
-      const allGamePoints = await tx.select().from(gamePoints);
-      const [details] = await tx.query.tournamentDetails.findMany({ limit: 1 });
-      if (!details) throw new Error('No tournament details found');
+  // Recompute the finals bracket from current results. Idempotent: re-running it
+  // fills next-round slots from results and clears slots whose feeder lost its
+  // result, so it converges from any state (used after both recording and deleting
+  // a finals result). Composes into a caller transaction; opens its own when none.
+  static async advanceFinalsRound(tx?: DbOrTx): Promise<void> {
+    if (!tx) {
+      await db.transaction((t) => this.advanceFinalsRound(t));
+      return;
+    }
 
-      const nextRound = calcNextFinalRound(finalsPairings, allGamePoints, details.minutesPerGame);
+    const finalsPairings = (await tx.select().from(pairings)).filter(isFinals);
+    const allGamePoints = await tx.select().from(gamePoints);
+    const [details] = await tx.query.tournamentDetails.findMany({ limit: 1 });
+    if (!details) throw new Error('No tournament details found');
 
-      await Promise.all(
-        nextRound.map((p) =>
-          p.id
-            ? tx
-                .update(pairings)
-                .set({
-                  competitor1ID: p.competitor1ID,
-                  competitor2ID: p.competitor2ID,
-                  startTime: p.startTime,
-                  court: p.court,
-                })
-                .where(eq(pairings.id, p.id))
-            : tx.insert(pairings).values({
+    const nextRound = calcNextFinalRound(finalsPairings, allGamePoints, details.minutesPerGame);
+
+    await Promise.all(
+      nextRound.map((p) =>
+        p.id
+          ? tx
+              .update(pairings)
+              .set({
                 competitor1ID: p.competitor1ID,
                 competitor2ID: p.competitor2ID,
-                round: p.round,
-                groupID: p.groupID,
                 startTime: p.startTime,
                 court: p.court,
-                gamenumber: p.gamenumber ?? 0,
-              }),
-        ),
-      );
+              })
+              .where(eq(pairings.id, p.id))
+          : tx.insert(pairings).values({
+              competitor1ID: p.competitor1ID,
+              competitor2ID: p.competitor2ID,
+              round: p.round,
+              groupID: p.groupID,
+              startTime: p.startTime,
+              court: p.court,
+              gamenumber: p.gamenumber ?? 0,
+            }),
+      ),
+    );
+  }
+
+  // Record (upsert) a Pairing's result and, when it is a finals Pairing, advance the
+  // bracket — atomically. Returns the stored GamePoint row.
+  static async recordResult(pairingID: number, competitor1Points: number, competitor2Points: number) {
+    return db.transaction(async (tx) => {
+      const result = await MatchRegistry.recordGamePoint(tx, pairingID, competitor1Points, competitor2Points);
+      const [pairing] = await tx.select().from(pairings).where(eq(pairings.id, pairingID));
+      if (pairing && isFinals(pairing)) {
+        await this.advanceFinalsRound(tx);
+      }
+      return result;
+    });
+  }
+
+  // Delete a Pairing's result and, when it is a finals Pairing, recompute the bracket
+  // so the propagated winner is rolled back (cascades through later rounds) — atomically.
+  static async deleteResult(pairingID: number): Promise<{ ok: true }> {
+    return db.transaction(async (tx) => {
+      const [pairing] = await tx.select().from(pairings).where(eq(pairings.id, pairingID));
+      await MatchRegistry.deleteGamePoint(tx, pairingID);
+      if (pairing && isFinals(pairing)) {
+        await this.advanceFinalsRound(tx);
+      }
+      return { ok: true };
     });
   }
 }
