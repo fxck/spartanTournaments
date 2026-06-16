@@ -45,3 +45,8 @@ Thumbs.db
 
 # Environment files
 .env*
+!.env.example
+
+# AI assistant config
+GEMINI.md
+.gemini/
