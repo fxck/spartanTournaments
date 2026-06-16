@@ -6,11 +6,16 @@ export interface SessionData {
   role?: 'admin' | 'referee';
 }
 
+const sessionSecret = process.env['SESSION_SECRET'];
+if (!sessionSecret || sessionSecret.length < 32) {
+  throw new Error('SESSION_SECRET must be set to a value of at least 32 characters.');
+}
+
 const sessionOptions = {
-  password: process.env['SESSION_SECRET'] ?? 'change-me-in-production-min-32-chars!!',
+  password: sessionSecret,
   cookieName: 'spartan-tournament-session',
   cookieOptions: {
-    secure: false, // Force false for now to debug
+    secure: process.env['NODE_ENV'] === 'production',
     httpOnly: true,
     sameSite: 'lax' as const,
     path: '/',
@@ -18,8 +23,6 @@ const sessionOptions = {
 };
 
 export async function getSession(event: H3Event) {
-  const cookieHeader = event.node.req.headers.cookie;
-  console.log(`[SESSION] Request path: ${event.path} | Cookie present: ${!!cookieHeader}`);
   return getIronSession<SessionData>(event.node.req, event.node.res, sessionOptions);
 }
 

@@ -2,8 +2,10 @@ import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
 import * as schema from './schema';
 
-const url = process.env['DATABASE_URL'] ?? '';
-console.log(`[DB] Initializing connection. URL present: ${!!url} (Length: ${url.length})`);
+const url = process.env['DATABASE_URL'];
+if (!url) {
+  throw new Error('DATABASE_URL must be set.');
+}
 const client = postgres(url, {
   types: {
     // PostgreSQL `timestamp without time zone` (OID 1114).
