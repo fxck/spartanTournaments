@@ -3,8 +3,8 @@ import { injectLoad } from '@analogjs/router';
 import { CommonModule } from '@angular/common';
 import { toSignal } from '@angular/core/rxjs-interop';
 import type { load } from './index.server';
-import { phaseLabel } from '../../shared/phase-name';
 import { injectLivePairings } from '../../shared/live-pairings';
+import { PairingHeaderComponent } from '../../shared/pairing-header.component';
 
 type LoadData = Awaited<ReturnType<typeof load>>;
 type ActivePairing = LoadData['active'][number];
@@ -13,12 +13,12 @@ type GamePoint = LoadData['gamepoints'][number];
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-home',
-  imports: [CommonModule],
+  imports: [CommonModule, PairingHeaderComponent],
   template: `
     <div class="space-y-12">
       <header>
         <h1 class="text-4xl font-bold tracking-tight">Aktuelle Spiele</h1>
-        <p class="text-muted-foreground mt-2">Die nächsten Begegnungen auf den Courts.</p>
+        <p class="text-muted-foreground mt-2">Die nächsten Begegnungen auf den Bahnen.</p>
       </header>
 
       <!-- Laufende Spiele -->
@@ -60,32 +60,8 @@ type GamePoint = LoadData['gamepoints'][number];
 
     <ng-template #card let-pairing="pairing" let-live="live">
       <div class="border rounded-xl shadow-sm overflow-hidden bg-card">
-        <!-- Header band: court + group, time -->
-        <div class="flex items-center justify-between gap-2 border-b bg-muted/30 px-4 py-2.5">
-          <span class="flex items-center gap-2 min-w-0">
-            <span class="text-sm font-bold text-primary leading-none truncate">Court {{ pairing.court }}</span>
-            <span class="px-2 py-0.5 rounded font-bold text-xs shrink-0 bg-secondary text-secondary-foreground">
-              {{ phaseLabel(pairing) }}
-            </span>
-          </span>
-          <span class="flex items-center gap-1.5 shrink-0 text-muted-foreground">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              class="h-4 w-4"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-              />
-            </svg>
-            <span class="text-sm font-bold tabular-nums leading-none">{{ pairing.startTime | date: 'HH:mm' }}</span>
-          </span>
-        </div>
+        <!-- Header band: time (primary accent) + phase left, court in its own panel right -->
+        <app-pairing-header [pairing]="pairing" />
 
         <!-- Matchup (with result, if one has been entered) -->
         @let points = pointsFor(pairing.id);
@@ -163,6 +139,4 @@ export default class HomeComponent {
     const now = Date.now();
     return this.activePairings().filter((p) => new Date(p.startTime).getTime() > now);
   });
-
-  protected phaseLabel = phaseLabel;
 }

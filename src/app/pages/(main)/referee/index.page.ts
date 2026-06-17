@@ -6,6 +6,7 @@ import { HlmButton } from '@spartan-ng/helm/button';
 import { injectLoad, defineRouteMeta } from '@analogjs/router';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { refereeGuard } from '../../../auth.guard';
+import { PairingHeaderComponent } from '../../../shared/pairing-header.component';
 import type { load } from './index.server';
 
 export const routeMeta = defineRouteMeta({
@@ -15,7 +16,7 @@ export const routeMeta = defineRouteMeta({
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-referee-overview',
-  imports: [CommonModule, RouterLink, ...HlmTableImports, HlmButton],
+  imports: [CommonModule, RouterLink, ...HlmTableImports, HlmButton, PairingHeaderComponent],
   template: `
     <div class="space-y-8">
       <header>
@@ -34,29 +35,8 @@ export const routeMeta = defineRouteMeta({
             [routerLink]="['/referee', p.id]"
             class="block border rounded-xl shadow-sm bg-card overflow-hidden active:bg-muted/40 transition-colors"
           >
-            <!-- Prominent header: court + start time are what referees scan for -->
-            <div class="flex items-stretch border-b bg-muted/30">
-              <div class="flex-1 flex items-center gap-2 px-4 py-2.5">
-                <span class="text-base font-bold text-primary leading-none tracking-tight">Court {{ p.court }}</span>
-              </div>
-              <div class="flex items-center gap-1.5 px-4 py-2.5 border-l bg-card">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  class="h-4 w-4 text-muted-foreground"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                  />
-                </svg>
-                <span class="text-base font-bold tabular-nums leading-none">{{ p.startTime | date: 'HH:mm' }}</span>
-              </div>
-            </div>
+            <!-- Prominent header: start time (primary accent) + court are what referees scan for -->
+            <app-pairing-header [pairing]="p" />
 
             <!-- Matchup -->
             <div class="relative px-4 py-4 space-y-1 text-center">
@@ -96,7 +76,7 @@ export const routeMeta = defineRouteMeta({
             <tr hlmTr>
               <th hlmTh class="w-16">Nr.</th>
               <th hlmTh class="w-36">Startzeit</th>
-              <th hlmTh class="w-24">Court</th>
+              <th hlmTh class="w-24">Bahn</th>
               <th hlmTh class="text-center">Begegnung</th>
             </tr>
           </thead>
@@ -125,8 +105,8 @@ export const routeMeta = defineRouteMeta({
                   </a>
                 </td>
                 <td hlmTd class="w-24">
-                  <span class="px-2 py-1 bg-primary/10 text-primary font-bold rounded-md text-xs"
-                    >Court {{ p.court }}</span
+                  <span class="px-2 py-1 bg-muted text-muted-foreground font-bold rounded-md text-xs"
+                    >Bahn {{ p.court }}</span
                   >
                 </td>
                 <td hlmTd>

@@ -1,5 +1,4 @@
 import { Component, computed, afterRenderEffect, ChangeDetectionStrategy } from '@angular/core';
-import { DatePipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { HlmTableImports } from '@spartan-ng/helm/table';
 import { HlmButton } from '@spartan-ng/helm/button';
@@ -7,12 +6,13 @@ import { injectLoad } from '@analogjs/router';
 import { toSignal } from '@angular/core/rxjs-interop';
 import type { load } from './results.server';
 import { phaseLabel } from '../../shared/phase-name';
+import { PairingHeaderComponent } from '../../shared/pairing-header.component';
 import { isFinals } from 'calc-tournament';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-results',
-  imports: [DatePipe, RouterLink, ...HlmTableImports, HlmButton],
+  imports: [RouterLink, ...HlmTableImports, HlmButton, PairingHeaderComponent],
   template: `
     <div class="space-y-8">
       <header>
@@ -27,49 +27,31 @@ import { isFinals } from 'calc-tournament';
             [id]="p.id === firstOpenId() ? 'first-open-m' : null"
             class="border rounded-xl shadow-sm overflow-hidden bg-card"
           >
-            <!-- Header band: court + time, plus score entry action -->
-            <div class="flex items-center justify-between gap-2 border-b bg-muted/30 px-4 py-2.5">
-              <span class="flex items-center gap-2 min-w-0">
-                <span class="text-sm font-bold text-primary leading-none truncate">Court {{ p.court }}</span>
-                <span class="flex items-center gap-1 text-muted-foreground shrink-0">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    class="h-4 w-4"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
+            <!-- Header band: time (primary accent) + phase left, score entry centered, court in its own panel right -->
+            <app-pairing-header [pairing]="p">
+              <span class="flex-1 flex justify-center min-w-0">
+                @if (
+                  canEdit() &&
+                  p.competitor1 &&
+                  p.competitor1.id &&
+                  p.competitor1.id > 0 &&
+                  p.competitor2 &&
+                  p.competitor2.id &&
+                  p.competitor2.id > 0
+                ) {
+                  <a
+                    hlmBtn
+                    variant="outline"
+                    size="sm"
+                    [routerLink]="['/referee', p.id]"
+                    [queryParams]="{ from: 'results' }"
+                    class="h-7 font-black tabular-nums shrink-0"
                   >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                    />
-                  </svg>
-                  <span class="text-sm font-bold tabular-nums leading-none">{{ p.startTime | date: 'HH:mm' }}</span>
-                </span>
+                    {{ p.points ? p.points.competitor1Points + ':' + p.points.competitor2Points : 'Eintragen' }}
+                  </a>
+                }
               </span>
-              @if (
-                canEdit() &&
-                p.competitor1 &&
-                p.competitor1.id &&
-                p.competitor1.id > 0 &&
-                p.competitor2 &&
-                p.competitor2.id &&
-                p.competitor2.id > 0
-              ) {
-                <a
-                  hlmBtn
-                  variant="outline"
-                  size="sm"
-                  [routerLink]="['/referee', p.id]"
-                  [queryParams]="{ from: 'results' }"
-                  class="-mr-1 h-7 font-black tabular-nums shrink-0"
-                >
-                  {{ p.points ? p.points.competitor1Points + ':' + p.points.competitor2Points : 'Eintragen' }}
-                </a>
-              }
-            </div>
+            </app-pairing-header>
             <div class="relative px-4 py-4 space-y-2">
               <div class="flex items-baseline justify-between gap-3">
                 @if (p.competitor1 && p.competitor1.id && p.competitor1.id > 0) {

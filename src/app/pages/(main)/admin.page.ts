@@ -77,7 +77,7 @@ interface Competitor {
 
               <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div class="grid gap-2">
-                  <label hlmLabel for="numberOfParallelGames">Parallele Spiele (Courts)</label>
+                  <label hlmLabel for="numberOfParallelGames">Parallele Spiele (Bahnen)</label>
                   <input hlmInput id="numberOfParallelGames" type="number" formControlName="numberOfParallelGames" />
                 </div>
                 <div class="grid gap-2">

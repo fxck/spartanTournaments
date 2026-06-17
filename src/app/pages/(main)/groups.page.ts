@@ -19,11 +19,14 @@ import type { load } from './groups.server';
 
       <div class="grid gap-12 lg:grid-cols-2">
         @for (group of groupList(); track group.id) {
-          <div class="space-y-4">
-            <h2 class="text-2xl font-bold px-2 text-primary">Gruppe {{ group.id }}</h2>
+          <div class="border rounded-xl shadow-sm overflow-hidden bg-card">
+            <!-- Header band: matches the cards on gameplan/results -->
+            <div class="border-b bg-muted/30 px-4 py-2.5">
+              <h2 class="text-lg font-bold leading-none text-primary">Gruppe {{ group.id }}</h2>
+            </div>
 
             <!-- Mobile: Karten-Liste -->
-            <div class="md:hidden border rounded-lg overflow-hidden shadow-sm divide-y">
+            <div class="md:hidden divide-y">
               @for (c of group.competitors; track c.id; let i = $index) {
                 <div class="flex items-center gap-3 p-3">
                   <span class="w-6 text-center font-bold shrink-0">{{ i + 1 }}</span>
@@ -58,7 +61,7 @@ import type { load } from './groups.server';
             </div>
 
             <!-- Desktop: Tabelle -->
-            <div hlmTableContainer class="hidden md:block border rounded-lg overflow-hidden shadow-sm">
+            <div hlmTableContainer class="hidden md:block">
               <table hlmTable>
                 <thead hlmTHead>
                   <tr hlmTr>

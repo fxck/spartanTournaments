@@ -54,8 +54,8 @@ export const routeMeta = defineRouteMeta({
               </h2>
             </div>
             <div class="flex gap-2">
-              <span class="px-3 py-1.5 bg-primary/10 text-primary font-bold rounded-lg text-sm"
-                >Court {{ p.court }}</span
+              <span class="px-3 py-1.5 bg-muted text-muted-foreground font-bold rounded-lg text-sm"
+                >Bahn {{ p.court }}</span
               >
               @if (isGroups(p)) {
                 <span class="px-3 py-1.5 bg-muted text-muted-foreground font-semibold rounded-lg text-sm"

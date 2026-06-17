@@ -8,13 +8,14 @@ import type { load } from './gameplan.server';
 import { phaseLabel } from '../../shared/phase-name';
 import { isFinals, isGroups } from 'calc-tournament';
 import { injectLivePairings } from '../../shared/live-pairings';
+import { PairingHeaderComponent } from '../../shared/pairing-header.component';
 
 type PairingRow = Awaited<ReturnType<typeof load>>[number];
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
   selector: 'app-gameplan',
-  imports: [CommonModule, RouterLink, ...HlmTableImports],
+  imports: [CommonModule, RouterLink, ...HlmTableImports, PairingHeaderComponent],
   template: `
     <div class="space-y-8">
       <header>
@@ -26,37 +27,8 @@ type PairingRow = Awaited<ReturnType<typeof load>>[number];
       <div class="space-y-3 md:hidden">
         @for (p of pairings(); track p.id) {
           <div class="border rounded-xl shadow-sm overflow-hidden" [class]="isFinals(p) ? 'bg-primary/5' : 'bg-card'">
-            <!-- Header band: phase/group, court, time -->
-            <div class="flex items-center justify-between gap-2 border-b bg-muted/30 px-4 py-2.5">
-              <span class="flex items-center gap-2 min-w-0">
-                <span class="text-sm font-bold text-primary leading-none truncate">Court {{ p.court }}</span>
-                <span
-                  class="px-2 py-0.5 rounded font-bold text-xs shrink-0"
-                  [class.bg-secondary]="isGroups(p)"
-                  [class.bg-primary]="isFinals(p)"
-                  [class.text-primary-foreground]="isFinals(p)"
-                >
-                  {{ phaseLabel(p) }}
-                </span>
-              </span>
-              <span class="flex items-center gap-1.5 shrink-0">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  class="h-4 w-4 text-muted-foreground"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                  />
-                </svg>
-                <span class="text-sm font-bold tabular-nums leading-none">{{ p.startTime | date: 'HH:mm' }}</span>
-              </span>
-            </div>
+            <!-- Header band: time (primary accent) + phase/group left, court in its own panel right -->
+            <app-pairing-header [pairing]="p" />
 
             <!-- Matchup -->
             <div class="relative px-4 py-4 space-y-1 text-center">
@@ -97,9 +69,9 @@ type PairingRow = Awaited<ReturnType<typeof load>>[number];
           <thead hlmTHead>
             <tr hlmTr>
               <th hlmTh class="w-12">Nr.</th>
-              <th hlmTh class="w-32 text-center text-primary">Runde</th>
+              <th hlmTh class="w-32 text-center">Runde</th>
               <th hlmTh class="w-24">Zeit</th>
-              <th hlmTh class="w-16 text-center">Court</th>
+              <th hlmTh class="w-16 text-center">Bahn</th>
               <th hlmTh class="text-center">Begegnung</th>
             </tr>
           </thead>

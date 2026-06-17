@@ -41,12 +41,15 @@ type EnrichedPairing = LoadResult['pairings'][number];
                 <div class="border rounded-lg p-4 shadow-sm">
                   <div class="flex items-center justify-between text-xs text-muted-foreground mb-2">
                     <span class="font-mono">#{{ p.gamenumber > 0 ? p.gamenumber : '-' }}</span>
-                    <span>{{ p.startTime | date: 'HH:mm' }} · Court {{ p.court }}</span>
+                    <span
+                      ><span class="font-bold text-primary">{{ p.startTime | date: 'HH:mm' }}</span> · Bahn
+                      {{ p.court }}</span
+                    >
                   </div>
                   <div class="flex items-baseline justify-between gap-3">
                     @let opp = getOpponent(p);
                     @if (opp && opp.id && opp.id > 0) {
-                      <span class="font-bold text-primary break-words min-w-0">{{ opp.name }}</span>
+                      <span class="font-bold break-words min-w-0">{{ opp.name }}</span>
                     } @else {
                       <span class="font-semibold text-muted-foreground italic">Offen</span>
                     }
@@ -74,7 +77,7 @@ type EnrichedPairing = LoadResult['pairings'][number];
                 <thead hlmTHead>
                   <tr hlmTr>
                     <th hlmTh class="w-16">Nr.</th>
-                    <th hlmTh class="w-32">Zeit / Court</th>
+                    <th hlmTh class="w-32">Zeit / Bahn</th>
                     <th hlmTh>Gegner</th>
                     <th hlmTh class="w-24 text-center border-l">Ergebnis</th>
                   </tr>
@@ -86,13 +89,13 @@ type EnrichedPairing = LoadResult['pairings'][number];
                         {{ p.gamenumber > 0 ? p.gamenumber : '-' }}
                       </td>
                       <td hlmTd class="w-32">
-                        <div class="font-medium">{{ p.startTime | date: 'HH:mm' }}</div>
-                        <div class="text-xs text-muted-foreground">Court {{ p.court }}</div>
+                        <div class="font-bold text-primary">{{ p.startTime | date: 'HH:mm' }}</div>
+                        <div class="text-xs text-muted-foreground">Bahn {{ p.court }}</div>
                       </td>
                       <td hlmTd>
                         @let opp = getOpponent(p);
                         @if (opp && opp.id && opp.id > 0) {
-                          <span class="font-bold text-primary">{{ opp.name }}</span>
+                          <span class="font-bold">{{ opp.name }}</span>
                         } @else {
                           <span class="font-semibold text-muted-foreground italic">Offen</span>
                         }
