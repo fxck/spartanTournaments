@@ -293,6 +293,18 @@ describe('TournamentEngine', () => {
     expect(res).toEqual({ ok: true });
     advance.mockRestore();
   });
+
+  it('deleteAllResults clears every result and recomputes the bracket', async () => {
+    const delAll = vi.spyOn(MatchRegistry, 'deleteAllGamePoints').mockResolvedValue({ ok: true });
+    const advance = vi.spyOn(TournamentEngine, 'advanceFinalsRound').mockResolvedValue();
+
+    const res = await TournamentEngine.deleteAllResults();
+
+    expect(delAll).toHaveBeenCalledWith(db);
+    expect(advance).toHaveBeenCalledWith(db);
+    expect(res).toEqual({ ok: true });
+    advance.mockRestore();
+  });
 });
 
 describe('CompetitorRegistry', () => {

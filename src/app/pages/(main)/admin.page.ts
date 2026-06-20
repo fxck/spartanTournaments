@@ -154,7 +154,12 @@ interface Competitor {
         <div hlmTabsContent="competitors" class="mt-6">
           <section hlmCard>
             <header hlmCardHeader>
-              <h2 hlmCardTitle>Teilnehmer</h2>
+              <div class="flex items-center justify-between gap-4">
+                <h2 hlmCardTitle>Teilnehmer</h2>
+                <span class="rounded-full bg-muted px-3 py-1 text-sm font-medium text-muted-foreground">
+                  {{ competitors().length }} Teilnehmer
+                </span>
+              </div>
               <p hlmCardDescription>Füge neue Boccia-Spieler oder Teams hinzu und verwalte sie.</p>
             </header>
 
@@ -338,6 +343,21 @@ interface Competitor {
                     Verschieben
                   </button>
                 </div>
+              </div>
+
+              <div
+                class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between p-4 border border-destructive/20 bg-destructive/5 rounded-lg"
+              >
+                <div class="space-y-1">
+                  <h3 class="font-semibold text-destructive">Alle Ergebnisse zurücksetzen</h3>
+                  <p class="text-sm text-muted-foreground">
+                    Löscht alle eingegebenen Spielergebnisse und setzt den Finalbaum zurück. Der Spielplan bleibt
+                    erhalten. Ideal zum Testen von Ergebniseingaben.
+                  </p>
+                </div>
+                <button hlmBtn variant="destructive" [disabled]="loading()" (click)="deleteAllResults()">
+                  Ergebnisse löschen
+                </button>
               </div>
 
               <div
@@ -642,6 +662,24 @@ export default class AdminPage {
     );
   }
 
+  async deleteAllResults() {
+    if (
+      !(await this.dialogService.confirm(
+        'Alle Ergebnisse löschen',
+        'Dies löscht ALLE eingegebenen Spielergebnisse und setzt den Finalbaum zurück. Der Spielplan bleibt erhalten. Wirklich fortfahren?',
+        true,
+      ))
+    )
+      return;
+
+    await this.runAction(
+      () => firstValueFrom(this.http.delete('/api/gamepoints')),
+      'Delete all results failed',
+      'Alle Ergebnisse wurden gelöscht.',
+      'Fehler beim Löschen der Ergebnisse.',
+    );
+  }
+
   async postponeGames(fromGameNumberStr: string, minutesStr: string) {
     const minutes = parseInt(minutesStr, 10);
     if (isNaN(minutes) || minutes === 0) {
@@ -659,10 +697,36 @@ export default class AdminPage {
 
     const direction = minutes > 0 ? 'nach hinten' : 'vor';
     const scope = hasFromGame ? `ab Nr. ${fromGameNumber}` : 'alle noch nicht gespielten';
+
+    // Count how many games would actually move, so the admin can sanity-check the
+    // scope before confirming. Mirrors the server's selection rule: not-yet-played
+    // games (no result) at or above the cut-off game number.
+    let affected: number;
+    try {
+      const [pairingsList, gamePointsList] = await Promise.all([
+        firstValueFrom(this.http.get<{ id: number; gamenumber: number }[]>('/api/pairings')),
+        firstValueFrom(this.http.get<{ pairingID: number }[]>('/api/gamepoints')),
+      ]);
+      const playedIds = new Set(gamePointsList.map((gp) => gp.pairingID));
+      affected = pairingsList.filter(
+        (p) => !playedIds.has(p.id) && (fromGameNumber === undefined || p.gamenumber >= fromGameNumber),
+      ).length;
+    } catch (err) {
+      console.error('Could not count affected games', err);
+      await this.dialogService.alert('Fehler', 'Die betroffenen Spiele konnten nicht ermittelt werden.', 'error');
+      return;
+    }
+
+    if (affected === 0) {
+      await this.dialogService.alert('Spiele verschieben', `Es gibt keine (${scope}) Spiele zum Verschieben.`, 'error');
+      return;
+    }
+
+    const gameWord = affected === 1 ? 'Spiel' : 'Spiele';
     if (
       !(await this.dialogService.confirm(
         'Spiele verschieben',
-        `Möchtest du ${scope} Spiele wirklich um ${Math.abs(minutes)} Minuten ${direction} verschieben?`,
+        `Möchtest du ${affected} ${gameWord} (${scope}) wirklich um ${Math.abs(minutes)} Minuten ${direction} verschieben?`,
         { confirmLabel: 'Verschieben' },
       ))
     )

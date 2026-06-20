@@ -177,4 +177,14 @@ export class TournamentEngine {
       return { ok: true };
     });
   }
+
+  // Delete ALL results and recompute the finals bracket so every propagated winner is
+  // rolled back — atomically. Pairings (the schedule) are kept; only results are cleared.
+  static async deleteAllResults(): Promise<{ ok: true }> {
+    return db.transaction(async (tx) => {
+      await MatchRegistry.deleteAllGamePoints(tx);
+      await this.advanceFinalsRound(tx);
+      return { ok: true };
+    });
+  }
 }
