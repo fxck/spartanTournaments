@@ -4,21 +4,20 @@ export function calcGroups(competitors: CalcCompetitor[], groupCount: number): C
   if (groupCount > competitors.length / 2) {
     throw new Error('too many groups for this count of competitors!');
   }
-  const groups: CalcGroup[] = [];
-  for (let i = 0; i < groupCount; i++) {
-    groups.push({ id: i + 1, competitors: [] });
-  }
+  // Fill groups in ascending draw-number blocks: the larger groups (filled first)
+  // get the lowest draws, the smaller, last groups get the highest draws. Draw
+  // numbers are random lots, so this has no competitive effect — it just gives
+  // high-lot teams fewer games (smaller group) so they can be started later (#4).
   competitors.sort((a, b) => (a.drawNumber ?? 0) - (b.drawNumber ?? 0));
-  for (const competitor of competitors) {
-    let groupIndex = 0;
-    let minCompetitors = groups[0].competitors.length;
-    for (let i = 1; i < groups.length; i++) {
-      if (groups[i].competitors.length < minCompetitors) {
-        minCompetitors = groups[i].competitors.length;
-        groupIndex = i;
-      }
-    }
-    groups[groupIndex].competitors.push(competitor);
+  const base = Math.floor(competitors.length / groupCount);
+  const remainder = competitors.length % groupCount;
+
+  const groups: CalcGroup[] = [];
+  let index = 0;
+  for (let i = 0; i < groupCount; i++) {
+    const size = base + (i < remainder ? 1 : 0);
+    groups.push({ id: i + 1, competitors: competitors.slice(index, index + size) });
+    index += size;
   }
   return groups;
 }

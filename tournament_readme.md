@@ -47,11 +47,20 @@ used to fill groups and to order the first round of play.
 `calcGroups(competitors, groupCount)` (`calc-groups.ts`):
 
 1. Sorts competitors by `drawNumber` ascending.
-2. Distributes them one by one into the group that currently has the fewest
-   members (balanced / round-robin fill). This keeps group sizes within ±1 of
-   each other and spreads seeds evenly.
+2. Fills groups in **ascending draw-number blocks**: the larger groups (filled
+   first) get the lowest draws, the smaller, last groups get the highest draws.
+   Group sizes stay within ±1 of each other (`base = floor(N/G)`, the first
+   `N mod G` groups get one extra).
 
-Example: 45 teams into 7 groups → group sizes `[7, 7, 7, 6, 6, 6, 6]`.
+Example: 45 teams into 7 groups → group sizes `[7, 7, 7, 6, 6, 6, 6]`, with the
+lowest draws in group 1 and the highest draws in group 7.
+
+**Why blocks instead of an even spread (feature #4):** draw numbers are *random
+lots* (`assignRandomDraw`), not skill seeds, so how they are spread across groups
+has no competitive meaning. By putting the highest-lot teams in the smallest
+groups, those teams get **fewer games** (a 6-team group plays 5 games vs a 7-team
+group's 6), so the organiser can start them later and they still finish on time.
+This complements the first-round scheduling order in the packer (also #4).
 
 `calcGroups` throws if `groupCount > teamCount / 2` (a group would have fewer
 than 2 teams).
