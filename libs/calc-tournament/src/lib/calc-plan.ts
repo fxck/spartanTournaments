@@ -12,66 +12,98 @@ export function CalcPlan(
   groups: CalcGroup[],
   details: CalcTournamentDetails,
 ): { rounds: CalcPairing[][]; allPairs: CalcPairing[] } {
-  const calc: PlanCalc = {
-    groups,
-    countOfParallelGames: details.numberOfParallelGames ?? 1,
-    allCompetitors,
-  };
+  const lanes = details.numberOfParallelGames ?? 1;
+  const minutesPerGame = details.minutesPerGame ?? 0;
+  const startMs = details.tournamentStartTime.getTime();
+
+  const calc: PlanCalc = { groups, countOfParallelGames: lanes, allCompetitors };
   const allPairs = calcPairsFromGroups(calc);
   for (let i = 0; i < allPairs.length; i++) {
     allPairs[i].id = i + 1;
   }
 
-  let round: CalcPairing[] = [];
-  const result: CalcPairing[][] = [];
-  let i = 0;
-  let gameNumber = 1;
+  const drawOf = new Map<number, number>();
+  for (const c of allCompetitors) drawOf.set(c.id, c.drawNumber ?? 0);
+  // A game's draw key is the highest draw number it contains: games involving a
+  // high-draw team are scheduled later in the first round (#4, soft preference).
+  const drawKey = (p: CalcPairing): number =>
+    Math.max(drawOf.get(p.competitor1ID) ?? 0, drawOf.get(p.competitor2ID) ?? 0);
 
-  for (const pair of allPairs) {
-    if (needNewRound(round, pair, calc)) {
-      result.push(round);
-      i++;
-      round = [];
-    }
-    pair.startTime = new Date(details.tournamentStartTime.getTime() + (details.minutesPerGame ?? 0) * i * 60000);
-    pair.court = round.length + 1;
-    pair.gamenumber = gameNumber++;
-    round.push(pair);
+  // Last round of every group must stay within a single time slot (no split).
+  const lastRoundOfGroup = new Map<number, number>();
+  const lastRoundCount = new Map<number, number>();
+  for (const g of groups) {
+    const ps = getPairingsForGroup(g);
+    const maxRound = getMaxRoundOfPairings(ps);
+    lastRoundOfGroup.set(g.id, maxRound);
+    lastRoundCount.set(g.id, ps.filter((p) => p.round === maxRound).length);
   }
-  if (round.length >= 1) result.push(round);
+  const isLastRoundPair = (p: CalcPairing): boolean => lastRoundOfGroup.get(p.groupID) === p.round;
+
+  // Remaining games per group drives packing priority: groups with the most games
+  // left get scheduled first, so large groups don't pile up into a lonely tail (#1).
+  const remainingByGroup = new Map<number, number>();
+  for (const p of allPairs) remainingByGroup.set(p.groupID, (remainingByGroup.get(p.groupID) ?? 0) + 1);
+
+  const remaining = new Set(allPairs);
+  const result: CalcPairing[][] = [];
+  let gameNumber = 1;
+  let slotIndex = 0;
+
+  while (remaining.size > 0) {
+    const slot: CalcPairing[] = [];
+    const used = new Set<number>();
+    const lastRoundStarted = new Set<number>();
+    const firstSlot = slotIndex === 0;
+
+    while (slot.length < lanes) {
+      const freeLanes = lanes - slot.length;
+      let best: CalcPairing | null = null;
+      let bestKey: number[] | null = null;
+
+      for (const p of remaining) {
+        if (used.has(p.competitor1ID) || used.has(p.competitor2ID)) continue;
+        // Don't open a group's last round unless it fits entirely in this slot.
+        // Only enforced when the round can fit in a slot at all (otherwise a split
+        // is unavoidable and skipping it forever would deadlock the scheduler).
+        if (isLastRoundPair(p) && !lastRoundStarted.has(p.groupID)) {
+          const count = lastRoundCount.get(p.groupID) ?? 0;
+          if (count <= lanes && count > freeLanes) continue;
+        }
+        const key = firstSlot
+          ? [p.round, drawKey(p), p.groupID]
+          : [-(remainingByGroup.get(p.groupID) ?? 0), p.round, drawKey(p), p.groupID];
+        if (bestKey === null || lexLess(key, bestKey)) {
+          best = p;
+          bestKey = key;
+        }
+      }
+
+      if (!best) break;
+
+      remaining.delete(best);
+      used.add(best.competitor1ID);
+      used.add(best.competitor2ID);
+      if (isLastRoundPair(best)) lastRoundStarted.add(best.groupID);
+      remainingByGroup.set(best.groupID, (remainingByGroup.get(best.groupID) ?? 1) - 1);
+      best.startTime = new Date(startMs + minutesPerGame * slotIndex * 60000);
+      best.court = slot.length + 1;
+      best.gamenumber = gameNumber++;
+      slot.push(best);
+    }
+
+    result.push(slot);
+    slotIndex++;
+  }
 
   return { rounds: result, allPairs };
 }
 
-function needNewRound(round: CalcPairing[], p: CalcPairing, calc: PlanCalc): boolean {
-  return (
-    round.length >= calc.countOfParallelGames ||
-    foundSameCompetitorInRound(p, round) ||
-    pairingShouldBePlayedInNextRound(round, p, calc)
-  );
-}
-
-function foundSameCompetitorInRound(p: CalcPairing, round: CalcPairing[]): boolean {
-  return round.some(
-    (r) =>
-      r.competitor1ID === p.competitor1ID ||
-      r.competitor1ID === p.competitor2ID ||
-      r.competitor2ID === p.competitor1ID ||
-      r.competitor2ID === p.competitor2ID,
-  );
-}
-
-function pairingShouldBePlayedInNextRound(round: CalcPairing[], pairing: CalcPairing, calc: PlanCalc): boolean {
-  for (const g of calc.groups) {
-    const gPairings = getPairingsForGroup(g);
-    if (!inPairings(pairing, gPairings)) continue;
-    if (!isLastRound(g, pairing)) return false;
-    if (gPairings.some((p) => inPairings(p, round))) return false;
-    const gamesPerRound = getGamesPerRound(g);
-    if (round.length + gamesPerRound <= calc.countOfParallelGames) return false;
-    break;
+function lexLess(a: number[], b: number[]): boolean {
+  for (let i = 0; i < a.length; i++) {
+    if (a[i] !== b[i]) return a[i] < b[i];
   }
-  return true;
+  return false;
 }
 
 function calcPairsFromGroups(calc: PlanCalc): CalcPairing[] {
@@ -89,12 +121,6 @@ function calcPairsFromGroups(calc: PlanCalc): CalcPairing[] {
     return (c1?.drawNumber ?? 0) - (c2?.drawNumber ?? 0);
   });
   return allPairs;
-}
-
-function inPairings(p: CalcPairing, ps: CalcPairing[]): boolean {
-  return ps.some(
-    (mp) => mp.competitor1ID === p.competitor1ID && mp.competitor2ID === p.competitor2ID && mp.round === p.round,
-  );
 }
 
 export function getPairingsForGroup(g: CalcGroup): CalcPairing[] {
@@ -142,20 +168,8 @@ function addPair(result: CalcPairing[], c1: number, c2: number, round: number, g
   result.push({ competitor1ID: c1, competitor2ID: c2, round, groupID } as CalcPairing);
 }
 
-function isLastRound(g: CalcGroup, ap: CalcPairing): boolean {
-  const p = getPairingsForGroup(g);
-  return getMaxRoundOfPairings(p) === ap.round;
-}
-
 function getMaxRoundOfPairings(pairing: CalcPairing[]): number {
   return pairing.reduce((max, p) => Math.max(max, p.round), 0);
-}
-
-function getGamesPerRound(g: CalcGroup): number {
-  const ps = getPairingsForGroup(g);
-  const m = new Map<number, number>();
-  for (const p of ps) m.set(p.round, (m.get(p.round) ?? 0) + 1);
-  return m.get(1) ?? 0;
 }
 
 export function CalcMostGamesPerCompetitorPlan(
