@@ -1,0 +1,22 @@
+#yamlPreprocessor=on
+project:
+  name: recipe-spartantournaments
+  tags:
+    - zerops-recipe
+
+services:
+  # Analog (Angular + Nitro) SSR app.
+  # hostname must match the `setup:` name in zerops.yml ("ssr").
+  - hostname: ssr
+    type: nodejs@22
+    buildFromGit: https://github.com/elite-benni/spartanTournaments
+    enableSubdomainAccess: true
+    envSecrets:
+      # Encrypts the iron-session cookie; generated once on import (≥ 32 chars).
+      SESSION_SECRET: <@generateRandomString(<32>)>
+
+  # PostgreSQL. Hostname must stay "db" — zerops.yml references ${db_connectionString} / ${db_dbName}.
+  - hostname: db
+    type: postgresql@16
+    mode: NON_HA
+    priority: 1

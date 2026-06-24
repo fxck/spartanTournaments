@@ -112,7 +112,21 @@ pnpm preview   # serves dist/analog/server/index.mjs
 ```
 
 Provide `DATABASE_URL`, `SESSION_SECRET` and `NODE_ENV=production` in the runtime
-environment. A `zerops.yml` is included for deployment on [Zerops](https://zerops.io).
+environment.
+
+### Deploy on Zerops
+
+[![Deploy on Zerops](https://github.com/zeropsio/recipe-shared-assets/blob/main/deploy-button/green/deploy-button.svg)](https://app.zerops.io/recipe/spartantournaments)
+
+This repo ships a [Zerops](https://zerops.io) recipe:
+
+- `zerops-project-import.yml` provisions the project — the SSR app plus a
+  PostgreSQL `db` service — and generates a `SESSION_SECRET` on import.
+- `zerops.yml` defines the build/run pipeline and wires `DATABASE_URL` from the
+  `db` service.
+
+To deploy manually, paste `zerops-project-import.yml` into the **Import project**
+dialog in the Zerops app, then connect the `ssr` service to this repository.
 
 ## License
 

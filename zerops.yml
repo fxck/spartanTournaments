@@ -17,6 +17,7 @@ zerops:
       base: nodejs@22
       envVariables:
         DATABASE_URL: ${db_connectionString}/${db_dbName}
+        NODE_ENV: production
       ports:
         - port: 3000
           httpSupport: true
