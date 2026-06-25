@@ -1,18 +1,45 @@
 zerops:
-  - setup: ssr
+  # ── dev ───────────────────────────────────────────────────────────
+  # Used by appdev (zeropsSetup: dev). Self-deploy (source == target),
+  # so deployFiles MUST be [.] — the mounted source survives each deploy.
+  # No NODE_OPTIONS: Node 22 auto-sizes the V8 heap from the build
+  # container's cgroup memory limit; a hardcoded --max-old-space-size
+  # only invites OOM kills (kernel limit wins over V8's heap limit).
+  - setup: dev
     build:
       base: nodejs@22
-      envVariables:
-        NODE_OPTIONS: --max-old-space-size=8192
       buildCommands:
         - pnpm i
         - pnpm run build
       deployFiles:
-        - node_modules
-        - dist
-        - drizzle
-        - drizzle.config.ts
-        - package.json
+        - .
+    run:
+      base: nodejs@22
+      envVariables:
+        DATABASE_URL: ${db_connectionString}/${db_dbName}
+        NODE_ENV: development
+      ports:
+        - port: 3000
+          httpSupport: true
+      initCommands:
+        - ./node_modules/.bin/drizzle-kit migrate
+      start: node dist/analog/server/index.mjs
+
+  # ── prod ──────────────────────────────────────────────────────────
+  # Used by appstage + the recipe's ssr / ssrstage services (zeropsSetup: prod).
+  # Cross-deploy / buildFromGit, so deployFiles cherry-picks the build output.
+  - setup: prod
+    build:
+      base: nodejs@22
+      buildCommands:
+        - pnpm i
+        - pnpm run build
+      deployFiles:
+        - dist                # compiled Nitro SSR server (self-contained)
+        - node_modules        # required by the drizzle-kit migrate init step
+        - drizzle             # SQL migration files applied on boot
+        - drizzle.config.ts   # drizzle-kit config (reads DATABASE_URL)
+        - package.json        # drizzle-kit module-resolution context (see note)
     run:
       base: nodejs@22
       envVariables:

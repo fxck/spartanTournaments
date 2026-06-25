@@ -1,0 +1,33 @@
+#yamlPreprocessor=on
+
+# Production (small) — a single-node Postgres with the app runtime on shared
+# CPU autoscaling 1→2. The cheapest way to run SpartanTournaments for real; not
+# redundant (a container restart briefly drops traffic). The schema migrates
+# automatically on first boot and SESSION_SECRET is generated on import.
+
+project:
+  name: spartantournaments
+  description: SpartanTournaments — single-node small production
+  corePackage: LIGHT
+  tags:
+    - spartantournaments
+    - tournament
+    - production
+
+services:
+  # ---- managed store (starts first) ----
+  - hostname: db
+    type: postgresql:single@16
+    priority: 10
+
+  # ---- app (built from git with the `prod` setup) ----
+  - hostname: app
+    type: nodejs@22
+    priority: 5
+    buildFromGit: https://github.com/fxck/spartanTournaments
+    zeropsSetup: prod
+    enableSubdomainAccess: true
+    minContainers: 1
+    maxContainers: 2
+    envSecrets:
+      SESSION_SECRET: <@generateRandomString(<32>)>

@@ -1,0 +1,45 @@
+#yamlPreprocessor=on
+
+# AI Agent — a dev + stage pair for agent-driven development. The dev half
+# (appdev) starts empty (startWithoutCode) for an AI agent / developer to adopt
+# and drive on the mounted filesystem (deploy with the `dev` setup); the stage
+# half (appstage) builds from git with the `prod` setup, so there's always a
+# running reference. Single-node Postgres, non-HA.
+
+project:
+  name: spartantournaments-agent
+  description: SpartanTournaments — agent-driven dev/stage pair (single-node Postgres)
+  corePackage: LIGHT
+  tags:
+    - spartantournaments
+    - tournament
+    - ai-agent
+
+services:
+  # ---- managed store (starts first) ----
+  - hostname: db
+    type: postgresql:single@16
+    priority: 10
+
+  # ---- dev half (empty; the agent adopts + drives it with the `dev` setup) ----
+  - hostname: appdev
+    type: nodejs@22
+    priority: 5
+    startWithoutCode: true
+    enableSubdomainAccess: true
+    minContainers: 1
+    maxContainers: 1
+    envSecrets:
+      SESSION_SECRET: <@generateRandomString(<32>)>
+
+  # ---- stage half (built from git with the `prod` setup; running reference) ----
+  - hostname: appstage
+    type: nodejs@22
+    priority: 5
+    buildFromGit: https://github.com/fxck/spartanTournaments
+    zeropsSetup: prod
+    enableSubdomainAccess: true
+    minContainers: 1
+    maxContainers: 1
+    envSecrets:
+      SESSION_SECRET: <@generateRandomString(<32>)>
