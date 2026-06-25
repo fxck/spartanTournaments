@@ -12,6 +12,10 @@ Built with [Analog](https://analogjs.org) (Angular + Nitro), Drizzle ORM and
 PostgreSQL. The tournament-calculation logic lives in a standalone,
 presentation-free library (`libs/calc-tournament`) with full unit-test coverage.
 
+> **Origin.** This is an AI-assisted port of an older tournament app, rebuilt on a
+> modern stack as a showcase for [Spartan UI](https://spartan.ng), [Angular](https://angular.dev) /
+> [Analog](https://analogjs.org), and one-command deployment on [Zerops](https://zerops.io).
+
 ## Features
 
 - **Single-tournament, single-deployment** — one running instance hosts one tournament.
@@ -35,7 +39,7 @@ model and [DOCUMENTATION.md](./DOCUMENTATION.md) for deeper architecture notes.
 
 ### Prerequisites
 
-- Node.js `>= 20.19.1`
+- Node.js `>= 22.22.3`
 - [pnpm](https://pnpm.io) `10.x`
 - Docker (for the local PostgreSQL instance) or your own PostgreSQL server
 
