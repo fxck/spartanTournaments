@@ -30,12 +30,12 @@ zerops:
       buildCommands:
         - pnpm i
         - pnpm run build
+        # Bundle a standalone migrator (drizzle-orm migrate() + postgres inlined)
+        # so prod applies migrations without shipping the root node_modules.
+        - pnpm dlx esbuild tools/migrate.ts --bundle --platform=node --format=esm --outfile=dist/migrate.mjs
       deployFiles:
-        - dist                # compiled Nitro SSR server (self-contained)
-        - node_modules        # needed by the drizzle-kit migrate init step
-        - drizzle             # SQL migration files applied on boot
-        - drizzle.config.ts   # drizzle-kit config (reads DATABASE_URL)
-        - package.json        # drizzle-kit module-resolution context
+        - dist                # self-contained Nitro server + bundled migrate.mjs
+        - drizzle             # SQL migration files read by the migrator at boot
     deploy:
       readinessCheck:         # gates deploy cutover until GET /health answers
         httpGet:
@@ -50,7 +50,7 @@ zerops:
         - port: 3000
           httpSupport: true
       initCommands:
-        - zsc execOnce ${appVersionId} --retryUntilSuccessful -- ./node_modules/.bin/drizzle-kit migrate
+        - zsc execOnce ${appVersionId} --retryUntilSuccessful -- node dist/migrate.mjs
       start: node dist/analog/server/index.mjs
       healthCheck:            # continuous; LB drops/restarts a container that stops answering
         httpGet:
