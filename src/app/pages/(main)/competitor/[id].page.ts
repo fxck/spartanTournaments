@@ -242,7 +242,6 @@ export default class CompetitorDetailPage {
     this.myTeam.toggle({ id, name });
   }
 
-
   // The server already filters to this Competitor's Pairings and enriches each with
   // its result, so the page just reads them through.
   myPairings = computed(() => this.data()?.pairings ?? []);

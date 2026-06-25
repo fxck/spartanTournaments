@@ -76,9 +76,9 @@ beforeEach(() => {
 describe('POST /api/tournament/setup', () => {
   it('returns 409 when a tournament already exists', async () => {
     findMany.mockResolvedValue([EXISTING]);
-    await expect(setupHandler(makeEvent({ ...CONFIG, adminPassword: 'a', refereePassword: 'r' }))).rejects.toMatchObject(
-      { statusCode: 409 },
-    );
+    await expect(
+      setupHandler(makeEvent({ ...CONFIG, adminPassword: 'a', refereePassword: 'r' })),
+    ).rejects.toMatchObject({ statusCode: 409 });
     expect(db.insert).not.toHaveBeenCalled();
   });
 
@@ -102,9 +102,9 @@ describe('POST /api/tournament/setup', () => {
     expect(hash).toHaveBeenCalledWith('admin-pw', 12);
     expect(hash).toHaveBeenCalledWith('ref-pw', 12);
     const inserted = values.mock.calls[0][0] as Record<string, unknown>;
-    expect(inserted["adminPasswordHash"]).toBe('hash:admin-pw');
-    expect(inserted["refereePasswordHash"]).toBe('hash:ref-pw');
-    expect(inserted["tournamentStartTime"]).toBeInstanceOf(Date);
+    expect(inserted['adminPasswordHash']).toBe('hash:admin-pw');
+    expect(inserted['refereePasswordHash']).toBe('hash:ref-pw');
+    expect(inserted['tournamentStartTime']).toBeInstanceOf(Date);
   });
 });
 
@@ -129,8 +129,8 @@ describe('PUT /api/tournament', () => {
     expect(result).toEqual({ ok: true });
     expect(hash).not.toHaveBeenCalled();
     const updated = set.mock.calls[0][0] as Record<string, unknown>;
-    expect(updated["adminPasswordHash"]).toBe('old-admin');
-    expect(updated["refereePasswordHash"]).toBe('old-ref');
+    expect(updated['adminPasswordHash']).toBe('old-admin');
+    expect(updated['refereePasswordHash']).toBe('old-ref');
   });
 
   it('hashes and replaces only the passwords that are provided', async () => {
@@ -140,8 +140,8 @@ describe('PUT /api/tournament', () => {
 
     expect(hash).toHaveBeenCalledWith('fresh-admin', 12);
     const updated = set.mock.calls[0][0] as Record<string, unknown>;
-    expect(updated["adminPasswordHash"]).toBe('hash:fresh-admin');
-    expect(updated["refereePasswordHash"]).toBe('old-ref'); // unchanged
+    expect(updated['adminPasswordHash']).toBe('hash:fresh-admin');
+    expect(updated['refereePasswordHash']).toBe('old-ref'); // unchanged
   });
 });
 

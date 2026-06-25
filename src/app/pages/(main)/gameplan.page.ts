@@ -89,7 +89,13 @@ type StatusFilter = 'all' | 'open' | 'played';
           </div>
 
           @if (hasActiveFilter()) {
-            <button hlmBtn variant="ghost" size="sm" (click)="resetFilters()" class="col-span-2 sm:col-span-1 sm:ml-auto">
+            <button
+              hlmBtn
+              variant="ghost"
+              size="sm"
+              (click)="resetFilters()"
+              class="col-span-2 sm:col-span-1 sm:ml-auto"
+            >
               Filter zurücksetzen
             </button>
           }
@@ -260,11 +266,15 @@ export default class GameplanPage {
 
   // Filter option lists, derived from the full schedule.
   protected groupOptions = computed(() =>
-    [...new Set(this.allPairings().filter((p) => isGroups(p)).map((p) => p.groupID))].sort((a, b) => a - b),
+    [
+      ...new Set(
+        this.allPairings()
+          .filter((p) => isGroups(p))
+          .map((p) => p.groupID),
+      ),
+    ].sort((a, b) => a - b),
   );
-  protected courtOptions = computed(() =>
-    [...new Set(this.allPairings().map((p) => p.court))].sort((a, b) => a - b),
-  );
+  protected courtOptions = computed(() => [...new Set(this.allPairings().map((p) => p.court))].sort((a, b) => a - b));
 
   // The filtered, displayed schedule.
   protected pairings = computed(() => {

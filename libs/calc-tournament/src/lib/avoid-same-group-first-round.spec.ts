@@ -10,7 +10,10 @@ describe('avoidSameGroupFirstRound', () => {
   ];
 
   const fromGroups = (groups: number[]): CalcCompetitor[] =>
-    groups.map((g, i) => ({ id: i + 1, name: `seed${i}`, drawNumber: i, groupID: g, diff: 0, createdAt: new Date() }) as CalcCompetitor);
+    groups.map(
+      (g, i) =>
+        ({ id: i + 1, name: `seed${i}`, drawNumber: i, groupID: g, diff: 0, createdAt: new Date() }) as CalcCompetitor,
+    );
 
   const firstRoundClashes = (finalists: CalcCompetitor[]): number => {
     let n = 0;

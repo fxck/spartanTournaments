@@ -28,6 +28,7 @@ vi.mock('bcryptjs', () => ({
 
 import bcrypt from 'bcryptjs';
 import { db } from '../../../db';
+import { __resetRateLimits } from '../../../rate-limit';
 import loginHandler from './login.post';
 import logoutHandler from './logout.post';
 import sessionHandler from './session.get';
@@ -37,7 +38,7 @@ const compare = bcrypt.compare as unknown as ReturnType<typeof vi.fn>;
 
 // Minimal event: a body slot for readBody plus the node req/res getSession expects.
 function makeEvent(body: unknown): H3Event {
-  return { _body: body, node: { req: {}, res: {} } } as unknown as H3Event;
+  return { _body: body, context: {}, node: { req: { socket: {}, headers: {} }, res: {} } } as unknown as H3Event;
 }
 
 const DETAILS = { adminPasswordHash: 'admin-hash', refereePasswordHash: 'ref-hash' };
@@ -45,6 +46,7 @@ const DETAILS = { adminPasswordHash: 'admin-hash', refereePasswordHash: 'ref-has
 describe('POST /api/auth/login', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    __resetRateLimits();
     session.role = undefined;
     findMany.mockResolvedValue([DETAILS]);
   });

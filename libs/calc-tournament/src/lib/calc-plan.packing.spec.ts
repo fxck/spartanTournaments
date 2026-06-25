@@ -11,7 +11,14 @@ describe('CalcPlan packing', () => {
   const makeCompetitors = (count: number): CalcCompetitor[] => {
     const cs: CalcCompetitor[] = [];
     for (let i = 1; i <= count; i++) {
-      cs.push({ id: i, name: `Team ${i}`, drawNumber: i, groupID: 0, diff: 0, createdAt: new Date() } as CalcCompetitor);
+      cs.push({
+        id: i,
+        name: `Team ${i}`,
+        drawNumber: i,
+        groupID: 0,
+        diff: 0,
+        createdAt: new Date(),
+      } as CalcCompetitor);
     }
     return cs;
   };
