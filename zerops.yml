@@ -1,10 +1,8 @@
 zerops:
   # ── dev ───────────────────────────────────────────────────────────
-  # Used by appdev (zeropsSetup: dev). Self-deploy (source == target),
-  # so deployFiles MUST be [.] — the mounted source survives each deploy.
-  # No NODE_OPTIONS: Node 22 auto-sizes the V8 heap from the build
-  # container's cgroup memory limit; a hardcoded --max-old-space-size
-  # only invites OOM kills (kernel limit wins over V8's heap limit).
+  # Used by appdev (zeropsSetup: dev). Self-deploy → deployFiles MUST be [.].
+  # No --max-old-space-size: Node 22 auto-sizes the heap from the cgroup limit.
+  # No health checks on dev — they belong on prod only.
   - setup: dev
     build:
       base: nodejs@22
@@ -26,7 +24,7 @@ zerops:
       start: node dist/analog/server/index.mjs
 
   # ── prod ──────────────────────────────────────────────────────────
-  # Used by appstage + the recipe's ssr / ssrstage services (zeropsSetup: prod).
+  # Used by appstage + the recipe's app / appstage services (zeropsSetup: prod).
   # Cross-deploy / buildFromGit, so deployFiles cherry-picks the build output.
   - setup: prod
     build:
@@ -36,10 +34,15 @@ zerops:
         - pnpm run build
       deployFiles:
         - dist                # compiled Nitro SSR server (self-contained)
-        - node_modules        # required by the drizzle-kit migrate init step
+        - node_modules        # needed by the drizzle-kit migrate init step
         - drizzle             # SQL migration files applied on boot
         - drizzle.config.ts   # drizzle-kit config (reads DATABASE_URL)
-        - package.json        # drizzle-kit module-resolution context (see note)
+        - package.json        # drizzle-kit module-resolution context
+    deploy:
+      readinessCheck:         # gates deploy cutover until GET /health answers
+        httpGet:
+          port: 3000
+          path: /health
     run:
       base: nodejs@22
       envVariables:
@@ -51,3 +54,7 @@ zerops:
       initCommands:
         - ./node_modules/.bin/drizzle-kit migrate
       start: node dist/analog/server/index.mjs
+      healthCheck:            # continuous; LB drops/restarts a container that stops answering
+        httpGet:
+          port: 3000
+          path: /health
