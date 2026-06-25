@@ -34,8 +34,8 @@ tournament-calculation logic lives in a standalone, presentation-free library
 with full unit-test coverage.
 
 Two topologies ship as one recipe: an **AI Agent** dev/stage pair for
-agent-driven development (an empty `appdev` container to adopt and drive, plus an
-`appstage` built from git as a live reference), and a single-node **Production** for
+agent-driven development (`appdev` as a ready-to-edit working dev environment and
+`appstage` as a live reference, both built from git), and a single-node **Production** for
 running it for real. Both use a single PostgreSQL database; the session secret is
 generated on import and the schema migrates automatically on first boot.
 <!-- #ZEROPS_EXTRACT_END:description# -->
@@ -90,10 +90,10 @@ are validated with Zod.
 
 ### Environments
 
-- **AI Agent** — a dev + stage pair over single-node Postgres. `appdev` starts
-  empty (`startWithoutCode`) for an AI agent (or you) to adopt and drive on the
-  mounted filesystem with the `dev` setup; `appstage` builds from git with the
-  `prod` setup as a live reference. Non-HA, lightweight.
+- **AI Agent** — a dev + stage pair over single-node Postgres, both built from
+  git. `appdev` uses the `dev` setup as a working dev environment to mount, edit
+  and iterate on; `appstage` uses the `prod` setup as a live reference. Non-HA,
+  lightweight.
 - **Production** — a single `app` runtime built from git with the `prod` setup,
   autoscaling 1→2 on shared CPU, over single-node Postgres. The cheapest way to
   run it for real; not redundant.
