@@ -120,19 +120,29 @@ environment.
 
 ### Deploy on Zerops
 
-This repo ships a [Zerops](https://zerops.io) recipe:
+This repo ships a [Zerops](https://zerops.io) recipe for one-click deployment:
 
-- `zerops-project-import.yml` provisions the project — the SSR app plus a
-  PostgreSQL `db` service — and generates a `SESSION_SECRET` on import.
+[![Deploy on Zerops](https://raw.githubusercontent.com/zeropsio/recipe-shared-assets/main/deploy-button/green/deploy-button.svg)](https://app.zerops.io/recipes/detail?github=https:%2F%2Fgithub.com%2Felite-benni%2FspartanTournaments)
+
+- [`.zerops-recipe/`](./.zerops-recipe) holds the recipe: a top-level
+  `README.md` (the description shown on the recipe page) and one deployment
+  profile, **Application**, with its own `README.md` and `import.yaml`.
+- `import.yaml` provisions the project — the SSR app plus a PostgreSQL `db`
+  service — and generates a `SESSION_SECRET` on import.
 - `zerops.yml` defines the build/run pipeline and wires `DATABASE_URL` from the
   `db` service.
 
-To deploy, open the [Zerops app](https://app.zerops.io), choose **Import project**,
-and paste the contents of [`zerops-project-import.yml`](./zerops-project-import.yml).
-Zerops builds the `ssr` service from this repository and starts PostgreSQL
-automatically.
+Click the button above (or open the
+[recipe link](https://app.zerops.io/recipes/detail?github=https:%2F%2Fgithub.com%2Felite-benni%2FspartanTournaments))
+to import the project straight from this repository. Zerops builds the `ssr`
+service and starts PostgreSQL automatically, running the database migrations on
+first boot.
 
-> One-click deploy button coming once the recipe is listed in the Zerops gallery.
+Alternatively, with the [Zerops CLI](https://docs.zerops.io/references/cli):
+
+```bash
+zerops project import ".zerops-recipe/1 — Application/import.yaml"
+```
 
 ## License
 

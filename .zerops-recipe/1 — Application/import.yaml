@@ -1,14 +1,18 @@
 #yamlPreprocessor=on
+# Application: single SSR container + NON_HA PostgreSQL.
+#   zerops project import ".zerops-recipe/1 — Application/import.yaml"
 project:
   name: recipe-spartantournaments
+  description: Self-hosted app for running a single round-based tournament from groups to finals
   tags:
     - zerops-recipe
 
 services:
-  # Analog (Angular + Nitro) SSR app.
-  # hostname must match the `setup:` name in zerops.yml ("ssr").
+  # Analog (Angular + Nitro) SSR app, built from this repository.
+  # zeropsSetup must match the `setup:` name in zerops.yml ("ssr").
   - hostname: ssr
     type: nodejs@22
+    zeropsSetup: ssr
     buildFromGit: https://github.com/elite-benni/spartanTournaments
     enableSubdomainAccess: true
     envSecrets:
