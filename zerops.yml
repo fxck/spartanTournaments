@@ -8,9 +8,8 @@ zerops:
       base: nodejs@22
       buildCommands:
         - pnpm i
-        - pnpm run build
       deployFiles:
-        - .
+        - ./
     run:
       base: nodejs@22
       envVariables:
@@ -21,7 +20,6 @@ zerops:
           httpSupport: true
       initCommands:
         - ./node_modules/.bin/drizzle-kit migrate
-      start: node dist/analog/server/index.mjs
 
   # ── prod ──────────────────────────────────────────────────────────
   # Used by appstage + the recipe's app / appstage services (zeropsSetup: prod).
@@ -52,7 +50,7 @@ zerops:
         - port: 3000
           httpSupport: true
       initCommands:
-        - ./node_modules/.bin/drizzle-kit migrate
+        - zsc execOnce ${appVersionId} --retryUntilSuccessful -- ./node_modules/.bin/drizzle-kit migrate
       start: node dist/analog/server/index.mjs
       healthCheck:            # continuous; LB drops/restarts a container that stops answering
         httpGet:
