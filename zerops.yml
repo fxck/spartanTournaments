@@ -19,7 +19,7 @@ zerops:
         - port: 3000
           httpSupport: true
       initCommands:
-        - ./node_modules/.bin/drizzle-kit migrate
+        - zsc execOnce ${appVersionId} --retryUntilSuccessful -- ./node_modules/.bin/drizzle-kit migrate
 
   # ── prod ──────────────────────────────────────────────────────────
   # Used by appstage + the recipe's app / appstage services (zeropsSetup: prod).
